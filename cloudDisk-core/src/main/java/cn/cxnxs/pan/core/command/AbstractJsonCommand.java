@@ -31,8 +31,7 @@ public abstract class AbstractJsonCommand extends AbstractCommand {
             json.put(ElFinderConstants.ELFINDER_JSON_RESPONSE_ERROR, e.getMessage());
             writer.write(json.toJSONString());
             writer.flush();
-        }
-        finally {
+        } finally {
             writer.close();
         }
     }

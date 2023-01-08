@@ -29,7 +29,7 @@ public class ElFinderConfig {
     @Bean(name = "commandFactory")
     public CommandFactory getCommandFactory() {
         CommandFactory commandFactory = new CommandFactory();
-        commandFactory.setClassNamePattern("cn.kong.elfinder.command.%sCommand");
+        commandFactory.setClassNamePattern("cn.cxnxs.pan.core.command.%sCommand");
         return commandFactory;
     }
 

@@ -31,7 +31,8 @@ file-manager:
         readable: true # 是否可读
         writable: true # 是否可写
 
-
+logging:
+  config: classpath:logback.xml
 
 
 
