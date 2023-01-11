@@ -7,10 +7,7 @@ import cn.cxnxs.pan.core.service.VolumeHandler;
 import com.alibaba.fastjson.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class OpenCommand extends AbstractJsonCommand implements ElfinderCommand {
 
@@ -41,18 +38,19 @@ public class OpenCommand extends AbstractJsonCommand implements ElfinderCommand 
         files.put(cwd.getHash(), cwd);
         addChildren(files, cwd);
 
-
         Object[] objects = buildJsonFilesArray(request, files.values());
-        json.put(ElFinderConstants.ELFINDER_PARAMETER_FILES, objects);
+        List<Object> filesList = new ArrayList<>(Arrays.asList(objects));
         String hash = cwd.getHash();
-        for(Object obj : objects){
+        for(Object obj : filesList){
             HashMap<String,Object> map = (HashMap<String, Object>) obj;
             String strHash = map.get("hash").toString();
             if(Objects.equals(hash, strHash)){
                 json.put(ElFinderConstants.ELFINDER_PARAMETER_CWD,map);
+                filesList.remove(map);
                 break;
             }
         }
+        json.put(ElFinderConstants.ELFINDER_PARAMETER_FILES, filesList);
         json.put(ElFinderConstants.ELFINDER_PARAMETER_OPTIONS, getOptions(cwd));
     }
 }
