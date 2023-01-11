@@ -1,4 +1,4 @@
-package cn.cxnxs.pan.web.entity.response;
+package cn.cxnxs.pan.core.entity.response;
 
 import java.util.List;
 
