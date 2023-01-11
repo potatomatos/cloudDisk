@@ -50,6 +50,7 @@ public final class ElFinderConstants {
     public static final String ELFINDER_PARAMETER_FILE_DESTINATION = "dst";
     public static final String ELFINDER_PARAMETER_CUT = "cut";
     public static final String ELFINDER_PARAMETER_TYPE = "type";
+    public static final String ELFINDER_VOLUME_ALIAS = "volumeAlias";
 
     //api commands json header
     public static final String ELFINDER_JSON_RESPONSE_ADDED = "added";

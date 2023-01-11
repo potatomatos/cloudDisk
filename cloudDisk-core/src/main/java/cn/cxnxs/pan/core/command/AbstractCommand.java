@@ -168,6 +168,8 @@ public abstract class AbstractCommand implements ElfinderCommand {
         options.put(ElFinderConstants.ELFINDER_PARAMETER_COMMAND_DISABLED, emptyArray);
         options.put(ElFinderConstants.ELFINDER_PARAMETER_FILE_SEPARATOR, ElFinderConstants.ELFINDER_PARAMETER_FILE_SEPARATOR);
         options.put(ElFinderConstants.ELFINDER_PARAMETER_OVERWRITE_FILE, ElFinderConstants.ELFINDER_TRUE_RESPONSE);
+        options.put(ElFinderConstants.ELFINDER_VOLUME_ALIAS, cwd.getVolumeAlias());
+        options.put(ElFinderConstants.ELFINDER_PARAMETER_VOLUME_ID, cwd.getVolumeId());
 //        options.put(ElFinderConstants.ELFINDER_PARAMETER_ARCHIVERS, ArchiverOption.JSON_INSTANCE());
         return options;
     }
