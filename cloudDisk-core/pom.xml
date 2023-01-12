@@ -18,6 +18,8 @@
         <slf4j.version>1.7.21</slf4j.version>
         <tika.version>1.12</tika.version>
         <commons-codec.version>1.10</commons-codec.version>
+        <joda-time.version>2.9.2</joda-time.version>
+        <java-image-scaling.version>0.8.6</java-image-scaling.version>
     </properties>
     <dependencies>
         <dependency>
@@ -41,6 +43,16 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>${commons-codec.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>${joda-time.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mortennobel</groupId>
+            <artifactId>java-image-scaling</artifactId>
+            <version>${java-image-scaling.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
