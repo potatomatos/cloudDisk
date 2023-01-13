@@ -18,7 +18,7 @@ public class ParentsCommand extends AbstractJsonCommand implements ElfinderComma
         final String target = request.getParameter(ElFinderConstants.ELFINDER_PARAMETER_TARGET);
         Object[] objects = new Object[]{};
         List<VolumeHandler> files = new ArrayList<>();
-        VolumeHandler volumeHandler = findTarget(elfinderStorage, target);
+        VolumeHandler volumeHandler = findCwd(elfinderStorage, target);
         if (volumeHandler.isRoot()) {
             json.put(ElFinderConstants.ELFINDER_PARAMETER_TREE, objects);
             return;
