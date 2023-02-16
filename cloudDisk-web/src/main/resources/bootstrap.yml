@@ -20,15 +20,11 @@ spring:
       enabled: true
   cloud:
     nacos:
-      server-addr: 192.168.1.101:8848
+      server-addr: 127.0.0.1:8848
       discovery:
-        # 服务注册地址
-#        server-addr: 192.168.1.101:8848
         #命名空间
         namespace: afafa52b-2009-43ff-8709-9945e36b4cc9
       config:
-        # 配置中心地址
-#        server-addr: 192.168.1.101:8848
         #命名空间
         namespace: afafa52b-2009-43ff-8709-9945e36b4cc9
         # 配置文件格式
