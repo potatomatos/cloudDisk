@@ -3,13 +3,15 @@
     <!-- 日志存放路径 -->
     <property name="log.path" value="logs/cloudDisk"/>
     <!-- 日志输出格式 -->
+    <property name="log.console.pattern"
+              value="%red(%d{yyyy-MM-dd HH:mm:ss}) %green([%thread]) %highlight(%-5level) %boldMagenta(%logger{50}.%M:%L)- %cyan(%msg%n)"/>
     <property name="log.pattern"
-              value="%black(控制台-) %red(%d{yyyy-MM-dd HH:mm:ss}) %green([%thread]) %highlight(%-5level) %boldMagenta(%logger) - %cyan(%msg%n)"/>
+              value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50}.%M:%L- %msg%n"/>
 
     <!-- 控制台输出 -->
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>${log.pattern}</pattern>
+            <pattern>${log.console.pattern}</pattern>
         </encoder>
     </appender>
 
@@ -58,15 +60,28 @@
         </filter>
     </appender>
 
+    <appender name="all" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/logger.log</file>
+        <!-- 循环政策：基于时间创建日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志文件名格式 -->
+            <fileNamePattern>${log.path}/logger.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 日志最大的历史 60天 -->
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
     <!-- Spring日志级别控制  -->
     <logger name="org.springframework" level="warn"/>
-
-    <root level="info">
-        <appender-ref ref="console"/>
-    </root>
+    <logger name="com.alibaba.nacos.client.config" level="warn"/>
 
     <!--系统操作日志-->
     <root level="info">
+        <appender-ref ref="console"/>
+        <appender-ref ref="all"/>
         <appender-ref ref="file_info"/>
         <appender-ref ref="file_error"/>
     </root>
