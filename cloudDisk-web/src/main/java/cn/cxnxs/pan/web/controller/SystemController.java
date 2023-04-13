@@ -27,18 +27,14 @@ public class SystemController {
     @Autowired
     private Oauth2Service oauth2Service;
 
-    @Value("${oauth.clientId}")
-    private String clientId;
     @Value("${oauth.clientSecret}")
     private String clientSecret;
-    @Value("${oauth.redirectUri}")
-    private String redirectUri;
 
     /**
      * 获取token
      */
     @GetMapping("/getAccessToken")
-    public Result<Map<String, String>> getAccessToken(String code) {
+    public Result<Map<String, String>> getAccessToken(String code,String clientId,String redirectUri) {
         log.info("code:{}", code);
         if (StringUtil.isEmpty(code)){
             return Result.failure("code不能为空！");
