@@ -1,4 +1,4 @@
-package cn.cxnxs.pan.core.core.impl;
+package cn.cxnxs.pan.core.core.impl.filesystem;
 
 import cn.cxnxs.pan.core.core.Target;
 import cn.cxnxs.pan.core.core.Volume;

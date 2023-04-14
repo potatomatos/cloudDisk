@@ -3,7 +3,7 @@ package cn.cxnxs.pan.core.service;
 import cn.cxnxs.pan.core.configuration.ElfinderConfigurationUtils;
 import cn.cxnxs.pan.core.core.Volume;
 import cn.cxnxs.pan.core.core.VolumeBuilder;
-import cn.cxnxs.pan.core.core.impl.NIO2FileSystemVolume;
+import cn.cxnxs.pan.core.core.impl.filesystem.NIO2FileSystemVolume;
 import cn.cxnxs.pan.core.exception.VolumeSourceException;
 
 import java.nio.file.Paths;
