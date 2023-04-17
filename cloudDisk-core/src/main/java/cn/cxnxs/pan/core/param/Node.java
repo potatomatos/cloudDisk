@@ -1,11 +1,14 @@
 package cn.cxnxs.pan.core.param;
 
+import java.util.Properties;
+
 public class Node {
     private String source;
     private String alias;
     private String path;
     private String locale;
     private Constraint constraint;
+    private Properties config;
 
     public String getSource() {
         return source;
@@ -45,5 +48,13 @@ public class Node {
 
     public void setConstraint(Constraint constraint) {
         this.constraint = constraint;
+    }
+
+    public Properties getConfig() {
+        return config;
+    }
+
+    public void setConfig(Properties config) {
+        this.config = config;
     }
 }
