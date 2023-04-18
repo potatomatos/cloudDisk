@@ -5,24 +5,37 @@ import com.arronlong.httpclientutil.HttpClientUtil;
 import com.arronlong.httpclientutil.builder.HCB;
 import com.arronlong.httpclientutil.common.*;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+/**
+ * @author potatomato
+ */
 public class HttpUtil {
 
 	private static final ThreadLocal<HttpServletRequest> requests = new InheritableThreadLocal<>();
 	private static final ThreadLocal<HttpServletResponse> responses = new InheritableThreadLocal<>();
 	private static final ThreadLocal<HttpSession> sessions = new InheritableThreadLocal<>();
+	private final static String[] STR_HEX = {"0", "1", "2", "3", "4", "5",
+			"6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
 
 	private static final Logger logger = LoggerFactory.getLogger(HttpUtil.class);
 
@@ -94,16 +107,29 @@ public class HttpUtil {
 		return JSONObject.parseObject(httpResult.getResult());
 	}
 
-	public static void setSession(HttpSession value){
-		sessions.set(value);
+	public static InputStream getInputStream() throws IOException, ServletException {
+		Part part = getReq().getPart("file");
+		return part.getInputStream();
 	}
 
-	public static HttpSession getSession(){
-		return sessions.get();
-	}
-
-	public static HttpServletRequest getReq(){
-		return requests.get();
+	public static String getMD5(InputStream in) {
+		StringBuilder sb = new StringBuilder();
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			byte[] b = md.digest(IOUtils.toByteArray(in));
+			for (int i = 0; i < b.length; i++) {
+				int d = b[i];
+				if (d < 0) {
+					d += 256;
+				}
+				int d1 = d / 16;
+				int d2 = d % 16;
+				sb.append(STR_HEX[d1]).append(STR_HEX[d2]);
+			}
+		} catch (NoSuchAlgorithmException | IOException e) {
+			e.printStackTrace();
+		}
+		return sb.toString();
 	}
 
 	public static void setReq(HttpServletRequest value){
@@ -115,5 +141,16 @@ public class HttpUtil {
 	}
 	public static HttpServletResponse getRes(){
 		return responses.get();
+	}
+	public static void setSession(HttpSession value){
+		sessions.set(value);
+	}
+
+	public static HttpSession getSession(){
+		return sessions.get();
+	}
+
+	public static HttpServletRequest getReq(){
+		return requests.get();
 	}
 }

@@ -28,7 +28,7 @@ public enum VolumeSources {
     BAIDU_PAN {
         @Override
         public VolumeBuilder<?> getVolumeBuilder(String alias, String path, Node nodeConfig) {
-            return new BaiduPanVolume.Builder(alias,Paths.get(ElfinderConfigurationUtils.toURI(path)),nodeConfig);
+            return new BaiduPanVolume.Builder(alias,path,nodeConfig);
         }
     };
 

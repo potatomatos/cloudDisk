@@ -26,10 +26,12 @@ public class BaiduPanVolume implements Volume {
     private final String alias;
     private final String source;
     private final Target rootTarget;
-    private final Path rootDir;
+    private final String rootDir;
     private final String apiUrl;
 
-    public BaiduPanVolume(Builder builder, Path rootDir, Node nodeConfig) {
+    private BaiduPanService baiduPanService;
+
+    public BaiduPanVolume(Builder builder, String rootDir, Node nodeConfig) {
         Properties config = nodeConfig.getConfig();
         if (config == null) {
             throw new RuntimeException("Please config your baidu pan config");
@@ -39,35 +41,12 @@ public class BaiduPanVolume implements Volume {
         this.source = BAIDU_PAN.name();
         this.rootDir = rootDir;
         this.rootTarget = new BaiduPanTarget(this, rootDir);
-    }
-
-    private HttpConfig buildOption(String url) throws HttpProcessException {
-        HttpConfig httpConfig = HttpUtil.buildOption(this.apiUrl + url);
-        HttpHeader httpHeader = HttpHeader.custom()
-                .host("pan.baidu.com")
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.81 Safari/537.36 SE 2.X MetaSr 1.0");
-        httpConfig.headers(httpHeader.build());
-        return httpConfig;
-    }
-
-    private HttpConfig buildOption(String url, HttpMethods methods) throws HttpProcessException {
-        HttpConfig httpConfig = HttpUtil.buildOption(this.apiUrl + url, methods);
-        HttpHeader httpHeader = HttpHeader.custom()
-                .host("pan.baidu.com")
-                .userAgent("pan.baidu.com");
-        httpConfig.headers(httpHeader.build());
-        return httpConfig;
+        this.baiduPanService = new BaiduPanService(this.apiUrl);
     }
 
     @Override
     public void createFile(Target target) throws HttpProcessException {
-        HttpConfig httpConfig = this.buildOption("/rest/2.0/xpan/file");
-        Map<String,Object> param = new HashMap<>();
-        BaiduPanTarget baiduPanTarget = (BaiduPanTarget) target;
-        param.put("access_token",baiduPanTarget.getAccessToken());
-        param.put("method","create");
-        httpConfig.map(param);
-        HttpUtil.request(httpConfig);
+
     }
 
     @Override
@@ -176,16 +155,16 @@ public class BaiduPanVolume implements Volume {
     }
 
 
-    public static Builder builder(String alias, Path rootDir, Node nodeConfig) {
+    public static Builder builder(String alias, String rootDir, Node nodeConfig) {
         return new BaiduPanVolume.Builder(alias, rootDir, nodeConfig);
     }
 
     public static class Builder implements VolumeBuilder<BaiduPanVolume> {
         private final String alias;
-        private final Path path;
+        private final String path;
         private final Node nodeConfig;
 
-        public Builder(String alias, Path rootDir, Node nodeConfig) {
+        public Builder(String alias, String rootDir, Node nodeConfig) {
             this.alias = alias;
             this.nodeConfig = nodeConfig;
             this.path = rootDir;

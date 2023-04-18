@@ -16,7 +16,10 @@ public class ElfinderConfiguration {
 
     private List<Node> volumes;
 
-    private Long maxUploadSize = -1L;//默认不限制
+    /**
+     * 默认不限制
+     */
+    private Long maxUploadSize = -1L;
 
     public Thumbnail getThumbnail() {
         return thumbnail;

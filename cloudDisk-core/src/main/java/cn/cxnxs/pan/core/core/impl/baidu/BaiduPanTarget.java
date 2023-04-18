@@ -7,13 +7,16 @@ import cn.cxnxs.pan.core.util.HttpUtil;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.file.Path;
 
+/**
+ * @author potatomato
+ */
 public class BaiduPanTarget implements Target {
     private final Volume volume;
 
-    private final Path path;
+    private final String path;
 
 
-    public BaiduPanTarget(Volume volume, Path path) {
+    public BaiduPanTarget(Volume volume, String path) {
         this.volume = volume;
         this.path = path;
     }
@@ -23,11 +26,11 @@ public class BaiduPanTarget implements Target {
         return volume;
     }
 
-    public Path getPath() {
+    public String getPath() {
         return path;
     }
 
-    public String getAccessToken(){
+    public String getAccessToken() {
         HttpServletRequest request = HttpUtil.getReq();
         return request.getParameter("baidu_pan_token");
     }
