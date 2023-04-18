@@ -71,7 +71,7 @@ public class ElFinderConfig {
             final boolean isWritable = elfinderConfigurationVolume.getConstraint().isWritable();
 
             // creates new volume
-            Volume volume = VolumeSources.of(source).newInstance(alias, path);
+            Volume volume = VolumeSources.of(source).newInstance(alias, path,elfinderConfigurationVolume);
 
             elfinderVolumes.add(volume);
             elfinderVolumeIds.put(volume, Character.toString(defaultVolumeId));

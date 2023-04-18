@@ -5,6 +5,7 @@ import cn.cxnxs.pan.core.command.ElfinderCommand;
 import cn.cxnxs.pan.core.command.ElfinderCommandFactory;
 import cn.cxnxs.pan.core.core.ElfinderContext;
 import cn.cxnxs.pan.core.service.ElfinderStorageFactory;
+import cn.cxnxs.pan.core.util.HttpUtil;
 import org.apache.tika.io.IOUtils;
 import org.apache.tomcat.util.http.fileupload.FileItemHeaders;
 import org.apache.tomcat.util.http.fileupload.FileItemStream;
@@ -54,7 +55,8 @@ public class ElfinderController {
             throw new IOException(e.getMessage());
         }
 
-
+        // 每次调用的时候将request注入
+        HttpUtil.setReq(request);
         String cmd = request.getParameter(ElFinderConstants.ELFINDER_PARAMETER_COMMAND);
         ElfinderCommand elfinderCommand = elfinderCommandFactory.get(cmd);
 

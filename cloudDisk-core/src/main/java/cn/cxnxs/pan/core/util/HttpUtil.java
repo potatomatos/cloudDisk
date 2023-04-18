@@ -1,19 +1,30 @@
 package cn.cxnxs.pan.core.util;
 
+import com.alibaba.fastjson.JSONObject;
+import com.arronlong.httpclientutil.HttpClientUtil;
 import com.arronlong.httpclientutil.builder.HCB;
-import com.arronlong.httpclientutil.common.HttpConfig;
-import com.arronlong.httpclientutil.common.HttpCookies;
-import com.arronlong.httpclientutil.common.HttpHeader;
-import com.arronlong.httpclientutil.common.HttpMethods;
+import com.arronlong.httpclientutil.common.*;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class HttpUtil {
+
+	private static final ThreadLocal<HttpServletRequest> requests = new InheritableThreadLocal<>();
+	private static final ThreadLocal<HttpServletResponse> responses = new InheritableThreadLocal<>();
+	private static final ThreadLocal<HttpSession> sessions = new InheritableThreadLocal<>();
+
+	private static final Logger logger = LoggerFactory.getLogger(HttpUtil.class);
 
 	public static String getAttachmentFileName(String fileName, String userAgent) throws UnsupportedEncodingException {
 		if (userAgent != null) {
@@ -56,5 +67,53 @@ public class HttpUtil {
 				.timeout(5000)
 				.context(cookies.getContext())
 				.method(method);
+	}
+
+	public static HttpConfig buildOption(String url) throws HttpProcessException {
+		return buildOption(url,HttpMethods.GET);
+	}
+
+	/**
+	 * 发送请求
+	 * @param httpConfig
+	 * @return
+	 * @throws HttpProcessException
+	 */
+	public static JSONObject request(HttpConfig httpConfig) throws HttpProcessException {
+		logger.info("-----------请求参数-----------");
+		logger.info("url:{}", httpConfig.url());
+		logger.info("parameter:{}", httpConfig.map());
+		logger.info("-----------------------------");
+		HttpResult httpResult = HttpClientUtil.sendAndGetResp(httpConfig);
+		logger.info("-----------------------------");
+		logger.info("statusLine：{}", httpResult.getStatusLine());
+		logger.info("statusCode：{}", httpResult.getStatusCode());
+		logger.info("resp-header：{}", Arrays.toString(httpResult.getRespHeaders()));
+		logger.info("result：{}", httpResult.getResult());
+		logger.info("-----------------------------");
+		return JSONObject.parseObject(httpResult.getResult());
+	}
+
+	public static void setSession(HttpSession value){
+		sessions.set(value);
+	}
+
+	public static HttpSession getSession(){
+		return sessions.get();
+	}
+
+	public static HttpServletRequest getReq(){
+		return requests.get();
+	}
+
+	public static void setReq(HttpServletRequest value){
+		requests.set(value);
+	}
+
+	public static void setRes(HttpServletResponse value){
+		responses.set(value);
+	}
+	public static HttpServletResponse getRes(){
+		return responses.get();
 	}
 }

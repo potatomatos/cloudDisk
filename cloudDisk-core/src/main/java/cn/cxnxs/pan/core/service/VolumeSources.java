@@ -3,8 +3,10 @@ package cn.cxnxs.pan.core.service;
 import cn.cxnxs.pan.core.configuration.ElfinderConfigurationUtils;
 import cn.cxnxs.pan.core.core.Volume;
 import cn.cxnxs.pan.core.core.VolumeBuilder;
+import cn.cxnxs.pan.core.core.impl.baidu.BaiduPanVolume;
 import cn.cxnxs.pan.core.core.impl.filesystem.NIO2FileSystemVolume;
 import cn.cxnxs.pan.core.exception.VolumeSourceException;
+import cn.cxnxs.pan.core.param.Node;
 
 import java.nio.file.Paths;
 import java.text.Normalizer;
@@ -19,14 +21,16 @@ public enum VolumeSources {
 
     FILESYSTEM {
         @Override
-        public VolumeBuilder<?> getVolumeBuilder(String alias, String path) {
+        public VolumeBuilder<?> getVolumeBuilder(String alias, String path, Node nodeConfig) {
             return NIO2FileSystemVolume.builder(alias, Paths.get(ElfinderConfigurationUtils.toURI(path)));
         }
     },
-
-
-//    ,DROPBOX, GOOGLEDRIVE, ONEDRIVE, ICLOUD
-    ;
+    BAIDU_PAN {
+        @Override
+        public VolumeBuilder<?> getVolumeBuilder(String alias, String path, Node nodeConfig) {
+            return new BaiduPanVolume.Builder(alias,Paths.get(ElfinderConfigurationUtils.toURI(path)),nodeConfig);
+        }
+    };
 
     public static VolumeSources of(String source) {
         if (source != null) {
@@ -52,11 +56,11 @@ public enum VolumeSources {
         throw new VolumeSourceException("Volume source not informed in elfinder configuration xml!");
     }
 
-    public Volume newInstance(String alias, String path) {
+    public Volume newInstance(String alias, String path, Node nodeConfig) {
         if (path == null || path.trim().isEmpty())
             throw new VolumeSourceException("Volume source path not informed");
-        return getVolumeBuilder(alias, path).build();
+        return getVolumeBuilder(alias, path,nodeConfig).build();
     }
 
-    public abstract VolumeBuilder<?> getVolumeBuilder(String alias, String path);
+    public abstract VolumeBuilder<?> getVolumeBuilder(String alias, String path,Node nodeConfig);
 }
