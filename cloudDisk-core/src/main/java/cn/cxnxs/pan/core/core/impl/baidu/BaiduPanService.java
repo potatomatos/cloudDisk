@@ -1,5 +1,6 @@
 package cn.cxnxs.pan.core.core.impl.baidu;
 
+import cn.cxnxs.pan.core.core.Target;
 import cn.cxnxs.pan.core.exception.ElFinderException;
 import cn.cxnxs.pan.core.util.FileUtils;
 import cn.cxnxs.pan.core.util.HttpUtil;
@@ -17,6 +18,7 @@ import javax.servlet.http.Part;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -166,13 +168,30 @@ public class BaiduPanService {
         HttpUtil.request(config);
     }
 
+    public void renameFile(BaiduPanTarget origin, BaiduPanTarget destination) throws HttpProcessException {
+        HttpConfig config = this.buildOption(FILE_MANAGER_URL, HttpMethods.POST);
+        Map<String,Object> param = new HashMap<>();
+        param.put("method","filemanager");
+        param.put("access_token",origin.getAccessToken());
+        param.put("opera","rename");
+        param.put("async",1);
+        JSONArray fileList = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("path",origin.getPath());
+        jsonObject.put("newname",destination.getPath().substring(destination.getPath().lastIndexOf("/")));
+        fileList.add(jsonObject);
+        param.put("filelist",fileList.toJSONString());
+        config.map(param);
+        HttpUtil.request(config);
+    }
+
 
     /**
      * 获取文件信息
      * @return
      */
-    public JSONObject getFileInfo(BaiduPanTarget target) {
-        HttpConfig config = this.buildOption(FILE_MANAGER_URL, HttpMethods.POST);
+    public JSONObject getFileInfo(BaiduPanTarget target) throws HttpProcessException {
+        HttpConfig config = this.buildOption(FILE_MANAGER_URL);
         Map<String,Object> param = new HashMap<>();
         param.put("method","filemanager");
         param.put("access_token",target.getAccessToken());
@@ -182,8 +201,47 @@ public class BaiduPanService {
         fileList.add(target.getPath());
         param.put("filelist",fileList.toJSONString());
         config.map(param);
-        HttpUtil.request(config);
-        return null;
+        JSONObject request = HttpUtil.request(config);
+        if (request.getInteger("errno")==0) {
+            JSONArray list = request.getJSONArray("list");
+            if (list.size()>0) {
+                return list.getJSONObject(0);
+            }
+        }
+        return new JSONObject();
+    }
+
+    public JSONObject getFileList(BaiduPanTarget target,Integer folder) throws HttpProcessException {
+        HttpConfig config = this.buildOption(FILE_MANAGER_URL, HttpMethods.GET);
+        Map<String,Object> param = new HashMap<>();
+        param.put("method","list");
+        param.put("access_token",target.getAccessToken());
+        param.put("dir",target.getPath());
+        param.put("folder",folder);
+        param.put("showempty",1);
+        config.map(param);
+        return HttpUtil.request(config);
+    }
+
+    public InputStream downloadFile(BaiduPanTarget target,String url) throws HttpProcessException, IOException {
+        HttpConfig config = this.buildOption(url, HttpMethods.GET,HttpHeader.custom().host("d.pcs.baidu.com"));
+        Map<String,Object> param = new HashMap<>(1);
+        param.put("access_token",target.getAccessToken());
+        config.map(param);
+        return HttpUtil.downloadFile(config);
+    }
+
+    public JSONObject search(String key) throws HttpProcessException {
+        HttpConfig config = this.buildOption(FILE_MANAGER_URL, HttpMethods.GET);
+        Map<String,Object> param = new HashMap<>();
+        param.put("method","search");
+        param.put("access_token",HttpUtil.getReq().getHeader("baidu_pan_token"));
+        param.put("key",key);
+        // 递归搜索
+        param.put("recursion",1);
+        param.put("web",1);
+        config.map(param);
+        return HttpUtil.request(config);
     }
 
 }

@@ -31,6 +31,6 @@ public class BaiduPanTarget implements Target {
 
     public String getAccessToken() {
         HttpServletRequest request = HttpUtil.getReq();
-        return request.getParameter("baidu_pan_token");
+        return request.getHeader("baidu_pan_token");
     }
 }

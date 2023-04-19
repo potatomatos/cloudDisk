@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -92,6 +93,25 @@ public class HttpUtil {
 	 * @throws HttpProcessException
 	 */
 	public static JSONObject request(HttpConfig httpConfig) throws HttpProcessException {
+		HttpResult httpResult = sendAndGet(httpConfig);
+		logger.info("result：{}", httpResult.getResult());
+		logger.info("-----------------------------");
+		return JSONObject.parseObject(httpResult.getResult());
+	}
+
+	/**
+	 * 文件下载
+	 * @param httpConfig
+	 * @return
+	 * @throws HttpProcessException
+	 * @throws IOException
+	 */
+	public static InputStream downloadFile(HttpConfig httpConfig) throws HttpProcessException, IOException {
+		HttpResult httpResult = sendAndGet(httpConfig);
+		return httpResult.getResp().getEntity().getContent();
+	}
+
+	public static HttpResult sendAndGet(HttpConfig httpConfig) throws HttpProcessException {
 		logger.info("-----------请求参数-----------");
 		logger.info("url:{}", httpConfig.url());
 		logger.info("parameter:{}", httpConfig.map());
@@ -101,9 +121,7 @@ public class HttpUtil {
 		logger.info("statusLine：{}", httpResult.getStatusLine());
 		logger.info("statusCode：{}", httpResult.getStatusCode());
 		logger.info("resp-header：{}", Arrays.toString(httpResult.getRespHeaders()));
-		logger.info("result：{}", httpResult.getResult());
-		logger.info("-----------------------------");
-		return JSONObject.parseObject(httpResult.getResult());
+		return httpResult;
 	}
 
 	public static Part getFile() throws IOException, ServletException {
