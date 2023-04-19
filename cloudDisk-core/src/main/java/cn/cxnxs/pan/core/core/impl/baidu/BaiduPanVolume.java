@@ -6,62 +6,65 @@ import cn.cxnxs.pan.core.core.VolumeBuilder;
 import cn.cxnxs.pan.core.param.Node;
 import cn.cxnxs.pan.core.util.HttpUtil;
 import com.arronlong.httpclientutil.common.HttpConfig;
-import com.arronlong.httpclientutil.common.HttpHeader;
 import com.arronlong.httpclientutil.common.HttpMethods;
-import com.arronlong.httpclientutil.exception.HttpProcessException;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static cn.cxnxs.pan.core.core.impl.baidu.Constant.FILE_MANAGER_URL;
 import static cn.cxnxs.pan.core.service.VolumeSources.BAIDU_PAN;
 
+@Slf4j
 public class BaiduPanVolume implements Volume {
 
     private final String alias;
     private final String source;
     private final Target rootTarget;
     private final String rootDir;
-    private final String apiUrl;
 
-    private BaiduPanService baiduPanService;
+    private final BaiduPanService baiduPanService;
 
     public BaiduPanVolume(Builder builder, String rootDir, Node nodeConfig) {
         Properties config = nodeConfig.getConfig();
         if (config == null) {
             throw new RuntimeException("Please config your baidu pan config");
         }
-        this.apiUrl = config.getProperty("apiUrl");
         this.alias = builder.alias;
         this.source = BAIDU_PAN.name();
         this.rootDir = rootDir;
         this.rootTarget = new BaiduPanTarget(this, rootDir);
-        this.baiduPanService = new BaiduPanService(this.apiUrl);
+        this.baiduPanService = new BaiduPanService();
     }
 
+    @SneakyThrows
     @Override
-    public void createFile(Target target) throws HttpProcessException {
-
+    public void createFile(Target target) throws IOException {
+        this.baiduPanService.createFile((BaiduPanTarget) target);
     }
 
+    @SneakyThrows
     @Override
     public void createFolder(Target target) throws IOException {
-
+        this.baiduPanService.createFolder((BaiduPanTarget) target);
     }
 
+    @SneakyThrows
     @Override
     public void deleteFile(Target target) throws IOException {
-
+        this.baiduPanService.deleteFile((BaiduPanTarget) target);
     }
 
+    @SneakyThrows
     @Override
     public void deleteFolder(Target target) throws IOException {
-
+        this.baiduPanService.deleteFile((BaiduPanTarget) target);
     }
 
     @Override

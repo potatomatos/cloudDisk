@@ -5,7 +5,6 @@ import cn.cxnxs.pan.core.core.Volume;
 import cn.cxnxs.pan.core.util.HttpUtil;
 
 import javax.servlet.http.HttpServletRequest;
-import java.nio.file.Path;
 
 /**
  * @author potatomato

@@ -7,7 +7,9 @@ import com.alibaba.fastjson.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 获得所有上级

@@ -5,7 +5,6 @@ import com.arronlong.httpclientutil.HttpClientUtil;
 import com.arronlong.httpclientutil.builder.HCB;
 import com.arronlong.httpclientutil.common.*;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
@@ -16,14 +15,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 /**
@@ -61,13 +56,17 @@ public class HttpUtil {
 		return "filename=\"" + URLEncoder.encode(fileName, "UTF8") + "\"";
 	}
 
-	public static HttpConfig buildOption(String url, HttpMethods method) throws HttpProcessException {
+	public static HttpConfig buildOption(String url, HttpMethods method) {
 		HttpHeader httpHeader = HttpHeader.custom().userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.81 Safari/537.36 SE 2.X MetaSr 1.0");
 		Header[] headers = httpHeader.build();
 		//重试5次
 		HCB hcb = HCB.custom().retry(5);
 		//是否绕过ssl
-		hcb.ssl();
+		try {
+			hcb.ssl();
+		} catch (HttpProcessException e) {
+			e.printStackTrace();
+		}
 		HttpClient client = hcb.build();
 		//获取返回的cookie
 		HttpCookies cookies = HttpCookies.custom();
@@ -82,7 +81,7 @@ public class HttpUtil {
 				.method(method);
 	}
 
-	public static HttpConfig buildOption(String url) throws HttpProcessException {
+	public static HttpConfig buildOption(String url) {
 		return buildOption(url,HttpMethods.GET);
 	}
 
@@ -107,29 +106,8 @@ public class HttpUtil {
 		return JSONObject.parseObject(httpResult.getResult());
 	}
 
-	public static InputStream getInputStream() throws IOException, ServletException {
-		Part part = getReq().getPart("file");
-		return part.getInputStream();
-	}
-
-	public static String getMD5(InputStream in) {
-		StringBuilder sb = new StringBuilder();
-		try {
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			byte[] b = md.digest(IOUtils.toByteArray(in));
-			for (int i = 0; i < b.length; i++) {
-				int d = b[i];
-				if (d < 0) {
-					d += 256;
-				}
-				int d1 = d / 16;
-				int d2 = d % 16;
-				sb.append(STR_HEX[d1]).append(STR_HEX[d2]);
-			}
-		} catch (NoSuchAlgorithmException | IOException e) {
-			e.printStackTrace();
-		}
-		return sb.toString();
+	public static Part getFile() throws IOException, ServletException {
+		return getReq().getPart("file");
 	}
 
 	public static void setReq(HttpServletRequest value){

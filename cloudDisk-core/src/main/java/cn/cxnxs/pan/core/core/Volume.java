@@ -1,7 +1,5 @@
 package cn.cxnxs.pan.core.core;
 
-import com.arronlong.httpclientutil.exception.HttpProcessException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,7 +7,7 @@ import java.util.List;
 
 public interface Volume {
 
-    void createFile(Target target) throws IOException, HttpProcessException;
+    void createFile(Target target) throws IOException;
 
     void createFolder(Target target) throws IOException;
 
