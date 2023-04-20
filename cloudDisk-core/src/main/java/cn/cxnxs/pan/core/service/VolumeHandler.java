@@ -107,7 +107,8 @@ public class VolumeHandler implements Serializable{
 
     public List<VolumeHandler> listChildren() throws IOException {
         List<VolumeHandler> list = new ArrayList<>();
-        for (Target child : volume.listChildren(target)) {
+        Target[] targets = volume.listChildren(target);
+        for (Target child : targets) {
             list.add(new VolumeHandler(child, elfinderStorage));
         }
         return list;

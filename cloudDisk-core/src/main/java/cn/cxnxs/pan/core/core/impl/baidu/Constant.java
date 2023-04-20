@@ -23,7 +23,7 @@ public interface Constant {
     /**
      * 操作文件 copy, mover, rename, delete
      */
-    String FILE_MANAGER_URL = " https://pan.baidu.com/rest/2.0/xpan/file";
+    String FILE_MANAGER_URL = "https://pan.baidu.com/rest/2.0/xpan/file";
 
     /**
      * 分片上传

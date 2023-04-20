@@ -3,13 +3,13 @@ package cn.cxnxs.pan.web.config;
 import cn.cxnxs.pan.core.param.Node;
 import cn.cxnxs.pan.core.param.Thumbnail;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
 
-@Component
-@ConfigurationProperties(prefix="file-manager") //接收application.yml中的file-manager下面的属性
+@Configuration
+@ConfigurationProperties(prefix="file-manager")
 public class ElfinderConfiguration {
 
     private Thumbnail thumbnail;

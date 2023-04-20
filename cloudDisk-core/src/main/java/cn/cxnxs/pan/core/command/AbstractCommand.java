@@ -25,16 +25,18 @@ public abstract class AbstractCommand implements ElfinderCommand {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final String CMD_TMB_TARGET = "?cmd=tmb&target=%s";
-    private Map<String, Object> options = new HashMap<>();
+    private final Map<String, Object> options = new HashMap<>();
 
     protected void addChildren(Map<String, VolumeHandler> map, VolumeHandler target) throws IOException {
-        for (VolumeHandler f : target.listChildren()) {
+        List<VolumeHandler> volumeHandlers = target.listChildren();
+        for (VolumeHandler f : volumeHandlers) {
             map.put(f.getHash(), f);
         }
     }
 
     protected void addSubFolders(Map<String, VolumeHandler> map, VolumeHandler target) throws IOException {
-        for (VolumeHandler f : target.listChildren()) {
+        List<VolumeHandler> volumeHandlers = target.listChildren();
+        for (VolumeHandler f : volumeHandlers) {
             if (f.isFolder()) {
                 map.put(f.getHash(), f);
 //                addSubFolders(map, f);

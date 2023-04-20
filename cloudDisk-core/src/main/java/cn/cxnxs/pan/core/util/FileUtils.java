@@ -1,7 +1,7 @@
 package cn.cxnxs.pan.core.util;
 
-import com.alibaba.fastjson.JSONArray;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.security.MessageDigest;
@@ -75,7 +75,7 @@ public class FileUtils {
                         bos.flush();
                         bos.close();
                     }
-                    bos = new BufferedOutputStream(new FileOutputStream(filePath + "." + System.currentTimeMillis() + "_" + (writeByte / splitSize + 1) + ".part"));
+                    bos = new BufferedOutputStream(new FileOutputStream(filePath + "_" + (writeByte / splitSize + 1) + ".part"));
                 }
                 writeByte += len;
                 bos.write(bt, 0, len);
@@ -97,7 +97,7 @@ public class FileUtils {
                 return resultFiles;
             }
         } catch (Exception e) {
-            log.info("文件分片失败！");
+            log.error("文件分片失败！");
             e.printStackTrace();
         } finally {
             if (bos != null) {
@@ -111,17 +111,52 @@ public class FileUtils {
         return new File[0];
     }
 
+    /**
+     * 合并文件
+     *
+     * @param separate 文件分片
+     * @param output   输出路径
+     * @return
+     */
+    public static void merge(File[] separate, String output) throws IOException {
+        String filePath;
+        if (StringUtils.isNotBlank(output)) {
+            filePath = output;
+        } else {
+            filePath = separate[0].getAbsolutePath().substring(0, separate[0].getAbsolutePath().lastIndexOf("_") - 1);
+        }
+        File tempFile = new File(filePath);
+        RandomAccessFile raf = new RandomAccessFile(tempFile, "rw");
+        RandomAccessFile reader;
+        for (File file : separate) {
+            //读取切片文件
+            reader = new RandomAccessFile(file, "r");
+            byte[] tempByteArray = new byte[1024];
+            int n;
+            while ((n = reader.read(tempByteArray)) != -1) {
+                raf.write(tempByteArray, 0, n);
+            }
+            //解除暂存文件  占用  才能删除 temp文件
+            try {
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        raf.close();
+        log.info("合并文件MD5：{}",getMD5(tempFile));
+    }
+
     public static void main(String[] args) throws IOException {
         File file = new File("C:\\tmp\\test\\.m2.zip");
         log.info("文件路径：{}", file.getPath());
         File[] separate = FileUtils.separate(file, UNIT);
-        JSONArray jsonArray = new JSONArray();
         long fileSizeSum = 0;
         for (File file1 : separate) {
-            jsonArray.add(FileUtils.getMD5(file1));
             fileSizeSum += new FileInputStream(file1).available();
         }
-        log.info("文件原始大小：{}，分片后总大小:{}，md5列表：{}", new FileInputStream(file).available(), fileSizeSum, jsonArray);
+        log.info("文件原始大小：{}，分片后总大小:{}，md5：{}", new FileInputStream(file).available(), fileSizeSum, FileUtils.getMD5(file));
+        FileUtils.merge(separate, "C:\\tmp\\test\\data.zip");
     }
 }
 

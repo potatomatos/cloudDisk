@@ -4,20 +4,23 @@ import cn.cxnxs.pan.core.core.Target;
 import cn.cxnxs.pan.core.core.Volume;
 import cn.cxnxs.pan.core.core.VolumeBuilder;
 import cn.cxnxs.pan.core.param.Node;
-import cn.cxnxs.pan.core.util.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.arronlong.httpclientutil.common.HttpConfig;
-import com.arronlong.httpclientutil.common.HttpMethods;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
-import static cn.cxnxs.pan.core.core.impl.baidu.Constant.FILE_MANAGER_URL;
-import static cn.cxnxs.pan.core.service.VolumeSources.BAIDU_PAN;
+import static cn.cxnxs.pan.core.service.VolumeSources.BAIDU;
+
 
 @Slf4j
 public class BaiduPanVolume implements Volume {
@@ -30,12 +33,8 @@ public class BaiduPanVolume implements Volume {
     private final BaiduPanService baiduPanService;
 
     public BaiduPanVolume(Builder builder, String rootDir, Node nodeConfig) {
-        Properties config = nodeConfig.getConfig();
-        if (config == null) {
-            throw new RuntimeException("Please config your baidu pan config");
-        }
         this.alias = builder.alias;
-        this.source = BAIDU_PAN.name();
+        this.source = BAIDU.name();
         this.rootDir = rootDir;
         this.rootTarget = new BaiduPanTarget(this, rootDir);
         this.baiduPanService = new BaiduPanService();
@@ -94,6 +93,10 @@ public class BaiduPanVolume implements Volume {
     @Override
     public String getAlias() {
         return this.alias;
+    }
+
+    public String getSource() {
+        return this.source;
     }
 
     @SneakyThrows

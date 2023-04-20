@@ -5,6 +5,8 @@ import com.arronlong.httpclientutil.HttpClientUtil;
 import com.arronlong.httpclientutil.builder.HCB;
 import com.arronlong.httpclientutil.common.*;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
@@ -21,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * @author potatomato
@@ -30,8 +33,6 @@ public class HttpUtil {
 	private static final ThreadLocal<HttpServletRequest> requests = new InheritableThreadLocal<>();
 	private static final ThreadLocal<HttpServletResponse> responses = new InheritableThreadLocal<>();
 	private static final ThreadLocal<HttpSession> sessions = new InheritableThreadLocal<>();
-	private final static String[] STR_HEX = {"0", "1", "2", "3", "4", "5",
-			"6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
 
 	private static final Logger logger = LoggerFactory.getLogger(HttpUtil.class);
 
@@ -126,6 +127,36 @@ public class HttpUtil {
 
 	public static Part getFile() throws IOException, ServletException {
 		return getReq().getPart("file");
+	}
+
+	public static String asUrlParams(Map<String, Object> source){
+		Map<String, String> tmp = Maps.newHashMap();
+		// java8 语法
+		source.forEach((k, v) -> {
+			if (k != null){
+				try {
+					tmp.put(k, URLEncoder.encode(v.toString(), "utf-8"));
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		return Joiner.on("&").useForNull("").withKeyValueSeparator("=").join(tmp);
+	}
+
+	/**
+	 * 构建请求参数
+	 * @param url
+	 * @param params
+	 * @return
+	 */
+	public static String buildUrl(String url, Map<String,Object> params) {
+		String[] arrSplit = url.split("[?]");
+		if (arrSplit.length > 1) {
+			return arrSplit[0]+"?"+arrSplit[1]+"&"+asUrlParams(params);
+		} else {
+			return url+"?"+asUrlParams(params);
+		}
 	}
 
 	public static void setReq(HttpServletRequest value){

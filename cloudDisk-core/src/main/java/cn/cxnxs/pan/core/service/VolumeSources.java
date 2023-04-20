@@ -25,7 +25,7 @@ public enum VolumeSources {
             return NIO2FileSystemVolume.builder(alias, Paths.get(ElfinderConfigurationUtils.toURI(path)));
         }
     },
-    BAIDU_PAN {
+    BAIDU {
         @Override
         public VolumeBuilder<?> getVolumeBuilder(String alias, String path, Node nodeConfig) {
             return new BaiduPanVolume.Builder(alias,path,nodeConfig);
@@ -45,13 +45,13 @@ public enum VolumeSources {
             source = source.replaceAll(whitespaceRegex, emptyString);
             source = source.replaceAll(notAsciiCharactersRegex, emptyString);
             source = source.trim().toUpperCase();
-
-            for (VolumeSources volumesource : values()) {
+            VolumeSources[] values = values();
+            for (VolumeSources volumesource : values) {
                 if (volumesource.name().equalsIgnoreCase(source)) {
                     return volumesource;
                 }
-                throw new VolumeSourceException("Volume source not supported! The supported volumes sources are: " + Arrays.deepToString(values()).toLowerCase());
             }
+            throw new VolumeSourceException("Volume source not supported! The supported volumes sources are: " + Arrays.deepToString(values()).toLowerCase());
         }
         throw new VolumeSourceException("Volume source not informed in elfinder configuration xml!");
     }
