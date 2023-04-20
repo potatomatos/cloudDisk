@@ -1,7 +1,7 @@
 package cn.cxnxs.pan.core.core.impl.baidu;
 
 import cn.cxnxs.pan.core.exception.ElFinderException;
-import cn.cxnxs.pan.core.util.FileUtils;
+import cn.cxnxs.pan.core.util.FileHelper;
 import cn.cxnxs.pan.core.util.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -71,11 +71,11 @@ public class BaiduPanService {
         part.write(tmpDirPath + filename);
         File uploadFile = new File(tmpDirPath + filename);
         //将文件分片
-        File[] separate = FileUtils.separate(uploadFile, UNIT);
+        File[] separate = FileHelper.separate(uploadFile,uploadFile.getAbsolutePath()+".part", UNIT);
         // 计算每个分片的MD5
         JSONArray blocklist = new JSONArray();
         for (File file : separate) {
-            blocklist.add(FileUtils.getMD5(file));
+            blocklist.add(FileHelper.getMD5(file));
         }
 
         //1.预上传
