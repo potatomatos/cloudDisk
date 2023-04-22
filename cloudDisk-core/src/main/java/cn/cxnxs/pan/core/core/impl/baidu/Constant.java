@@ -31,7 +31,7 @@ public interface Constant {
     String SLICING_UPLOAD_FILE_URL = "https://d.pcs.baidu.com/rest/2.0/pcs/superfile2";
 
     /**
-     * 下载文件
+     * 文件信息
      */
-    String DOWNLOAD_URL = "https://pan.baidu.com/rest/2.0/xpan/multimedia";
+    String FILE_INFO_URL = "https://pan.baidu.com/rest/2.0/xpan/multimedia";
 }
