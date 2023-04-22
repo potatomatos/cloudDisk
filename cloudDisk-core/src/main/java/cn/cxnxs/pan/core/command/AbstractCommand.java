@@ -158,9 +158,9 @@ public abstract class AbstractCommand implements ElfinderCommand {
             info.put(ElFinderConstants.ELFINDER_PARAMETER_PARENTHASH, target.getParent().getHash());
         }
 
-        if (target.isFolder()) {
+        /*if (target.isFolder()) {
             info.put(ElFinderConstants.ELFINDER_PARAMETER_HAS_DIR, target.hasChildFolder() ? ElFinderConstants.ELFINDER_TRUE_RESPONSE : ElFinderConstants.ELFINDER_FALSE_RESPONSE);
-        }
+        }*/
         return info;
     }
 
@@ -197,9 +197,10 @@ public abstract class AbstractCommand implements ElfinderCommand {
         public void run()  {
             try {
                 jsonFileList.add(getTargetInfo(request, itemHandler));
-                downLatch.countDown();
             } catch (IOException e) {
                 e.printStackTrace();
+            }finally {
+                downLatch.countDown();
             }
         }
     }
