@@ -25,10 +25,25 @@ public class HashesUtil {
 		return new String(Base64.decodeBase64(hash));
 	}
 
+	public static String getParentFolderPath(String folderPath) {
+		String[] folders = folderPath.split("/");
+		// 根目录没有上级文件夹
+		if (folders.length <= 1) {
+			return null;
+		}
+		if (folders.length==2){
+			return "/";
+		}
+		StringBuilder parentPath = new StringBuilder();
+		for (int i = 0; i < folders.length - 1; i++) {
+			parentPath.append(folders[i]);
+			if (i < folders.length - 2) {
+				parentPath.append("/");
+			}
+		}
+		return parentPath.toString();
+	}
 	public static void main(String[] args) {
-		System.out.println(encode("opt"));
-		System.out.println(decode("b3B0XEFyY2hpdmUuemlw"));
-		System.out.println(decode("b3B0L_PacrOacuueFp_PeJhw_E_E"));
-		System.out.println("opt\\constants\\新建文本文档 (2).txt".substring("opt\\constants".length() + 1));
+		System.out.println(getParentFolderPath("/A"));
 	}
 }
