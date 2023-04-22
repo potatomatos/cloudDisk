@@ -185,14 +185,16 @@ public class BaiduPanService {
      */
     public JSONObject getFileInfo(BaiduPanTarget target) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
-        param.put("method","filemanager");
+        param.put("method","filemetas");
         param.put("access_token",target.getAccessToken());
-        param.put("opera","delete");
-        param.put("async",1);
-        JSONArray fileList = new JSONArray();
-        fileList.add(target.getPath());
-        param.put("filelist",fileList.toJSONString());
-        HttpConfig config = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param));
+        JSONArray fsids = new JSONArray();
+        fsids.add(target.getFsId());
+        param.put("fsids",fsids.toJSONString());
+        param.put("dlink",1);
+        param.put("thumb",1);
+        param.put("extra",1);
+        param.put("needmedia",1);
+        HttpConfig config = this.buildOption(HttpUtil.buildUrl(FILE_INFO_URL,param));
         JSONObject request = HttpUtil.request(config);
         if (request.getInteger("errno")==0) {
             JSONArray list = request.getJSONArray("list");
