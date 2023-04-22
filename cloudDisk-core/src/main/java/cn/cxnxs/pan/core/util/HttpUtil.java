@@ -78,7 +78,7 @@ public class HttpUtil {
 				.headers(headers)
 				.client(client)
 				.encoding("utf-8")
-				.timeout(5000)
+				.timeout(20000)
 				.context(cookies.getContext())
 				.method(method);
 	}
