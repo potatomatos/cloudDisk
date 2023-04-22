@@ -4,8 +4,10 @@ import cn.cxnxs.pan.core.core.Target;
 import cn.cxnxs.pan.core.core.Volume;
 import cn.cxnxs.pan.core.core.VolumeBuilder;
 import cn.cxnxs.pan.core.param.Node;
+import cn.cxnxs.pan.core.util.HashesUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.arronlong.httpclientutil.exception.HttpProcessException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +18,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static cn.cxnxs.pan.core.service.VolumeSources.BAIDU;
 
@@ -66,8 +67,8 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public boolean exists(Target target) {
-        JSONObject fileInfo = this.baiduPanService.getFileInfo((BaiduPanTarget) target);
-        return !fileInfo.isEmpty();
+        BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
+        return baiduPanTarget.getFileInfo()!=null&&!baiduPanTarget.getFileInfo().isEmpty();
     }
 
     @Override
@@ -78,15 +79,30 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public long getLastModified(Target target) throws IOException {
-        JSONObject fileInfo = this.baiduPanService.getFileInfo((BaiduPanTarget) target);
-        return fileInfo.getLong("server_mtime") * 1000;
+        BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
+        JSONObject fileInfo = baiduPanTarget.getFileInfo();
+        if (fileInfo!=null) {
+            return fileInfo.getLong("server_mtime") * 1000;
+        }
+        return 0;
     }
 
     @SneakyThrows
     @Override
     public String getMimeType(Target target) throws IOException {
-        JSONObject fileInfo = this.baiduPanService.getFileInfo((BaiduPanTarget) target);
-        return Objects.requireNonNull(FileType.getType(fileInfo.getInteger("category"))).name().toLowerCase();
+        BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
+        JSONObject fileInfo = baiduPanTarget.getFileInfo();
+        if (fileInfo==null) {
+            return "";
+        }
+        if (1==fileInfo.getInteger("isdir")) {
+            return "directory";
+        }
+        FileType category = FileType.getType(fileInfo.getInteger("category"));
+        if (category!=null) {
+            return category.name().toLowerCase();
+        }
+        return "other";
     }
 
     @Override
@@ -101,14 +117,18 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public String getName(Target target) {
-        JSONObject fileInfo = this.baiduPanService.getFileInfo((BaiduPanTarget) target);
-        return fileInfo.getString("filename");
+        BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
+        JSONObject fileInfo = baiduPanTarget.getFileInfo();
+        if (fileInfo!=null) {
+            return fileInfo.getString("filename");
+        }
+        return "";
     }
 
     @Override
     public Target getParent(Target target) {
         BaiduPanTarget baiduPanTarget = (BaiduPanTarget) target;
-        String path = baiduPanTarget.getPath().substring(baiduPanTarget.getPath().lastIndexOf("/"));
+        String path = HashesUtil.getParentFolderPath(baiduPanTarget.getPath());
         return new BaiduPanTarget(this, path);
     }
 
@@ -125,8 +145,12 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public long getSize(Target target) throws IOException {
-        JSONObject fileInfo = this.baiduPanService.getFileInfo((BaiduPanTarget) target);
-        return fileInfo.getLong("size");
+        BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
+        JSONObject fileInfo = baiduPanTarget.getFileInfo();
+        if (fileInfo!=null) {
+            return fileInfo.getLong("size");
+        }
+        return 0;
     }
 
     @SneakyThrows
@@ -139,8 +163,13 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public boolean isFolder(Target target) {
-        JSONObject fileInfo = this.baiduPanService.getFileInfo((BaiduPanTarget) target);
-        return fileInfo.getInteger("isdir") == 1;
+        BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
+        JSONObject fileInfo = baiduPanTarget.getFileInfo();
+        if (fileInfo!=null) {
+            return fileInfo.getInteger("isdir") == 1;
+        }
+        return false;
+
     }
 
     @SneakyThrows
@@ -158,7 +187,9 @@ public class BaiduPanVolume implements Volume {
             BaiduPanTarget[] targets = new BaiduPanTarget[list.size()];
             for (int i = 0; i < list.size(); i++) {
                 JSONObject jsonObject = list.getJSONObject(i);
-                targets[i] = new BaiduPanTarget(this, jsonObject.getString("path"));
+                targets[i] = new BaiduPanTarget(this,
+                        jsonObject.getString("path"),
+                        jsonObject.getLong("fs_id"));
             }
             return targets;
         }
@@ -169,11 +200,24 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public InputStream openInputStream(Target target) {
-        JSONObject fileInfo = this.baiduPanService.getFileInfo((BaiduPanTarget) target);
-        if (StringUtils.isNoneBlank(fileInfo.getString("dlink"))) {
+        BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
+        JSONObject fileInfo = baiduPanTarget.getFileInfo();
+        if (fileInfo!=null&&StringUtils.isNoneBlank(fileInfo.getString("dlink"))) {
             return this.baiduPanService.downloadFile((BaiduPanTarget) target, fileInfo.getString("dlink"));
         }
         return null;
+    }
+
+    private BaiduPanTarget getFileInfo(BaiduPanTarget target) throws HttpProcessException {
+        if (target.getFileInfo()!=null&&!target.getFileInfo().isEmpty()) {
+            return target;
+        } else {
+            if (target.getFsId()!=null) {
+                JSONObject fileInfo = this.baiduPanService.getFileInfo(target);
+                target.setFileInfo(fileInfo);
+            }
+        }
+        return target;
     }
 
     @SneakyThrows
@@ -206,7 +250,9 @@ public class BaiduPanVolume implements Volume {
             JSONArray list = result.getJSONArray("list");
             for (int i = 0; i < list.size(); i++) {
                 JSONObject jsonObject = list.getJSONObject(i);
-                targets.add(new BaiduPanTarget(this, jsonObject.getString("path")));
+                targets.add(new BaiduPanTarget(this,
+                        jsonObject.getString("path"),
+                        jsonObject.getLong("fs_id")));
             }
         }
         return targets;

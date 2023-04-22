@@ -2,6 +2,10 @@ package cn.cxnxs.pan.core.core.impl.baidu;
 
 import cn.cxnxs.pan.core.core.Target;
 import cn.cxnxs.pan.core.core.Volume;
+import cn.cxnxs.pan.core.util.HttpUtil;
+import com.alibaba.fastjson.JSONObject;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author potatomato
@@ -9,8 +13,17 @@ import cn.cxnxs.pan.core.core.Volume;
 public class BaiduPanTarget implements Target {
     private final Volume volume;
 
+    private JSONObject fileInfo;
+
     private final String path;
 
+    private Long fsId;
+
+    public BaiduPanTarget(Volume volume, String path, Long fsId) {
+        this.volume = volume;
+        this.path = path;
+        this.fsId = fsId;
+    }
 
     public BaiduPanTarget(Volume volume, String path) {
         this.volume = volume;
@@ -26,9 +39,20 @@ public class BaiduPanTarget implements Target {
         return path;
     }
 
+    public Long getFsId() {
+        return fsId;
+    }
+
+    public JSONObject getFileInfo() {
+        return fileInfo;
+    }
+
+    public void setFileInfo(JSONObject fileInfo) {
+        this.fileInfo = fileInfo;
+    }
+
     public String getAccessToken() {
-       /* HttpServletRequest request = HttpUtil.getReq();
-        return request.getHeader("baidu_pan_token");*/
-        return "123.93d0ee516a062dd833e36759215f3896.Y5j1AALTnFN2A0JjqX4ns0JRCf7AkpjH4lfVK-D.9JLrSA";
+        HttpServletRequest request = HttpUtil.getReq();
+        return request.getHeader("baidu_pan_token");
     }
 }
