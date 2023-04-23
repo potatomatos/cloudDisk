@@ -145,4 +145,8 @@ public class VolumeHandler implements Serializable{
     public ElfinderStorage getElfinderStorage() {
         return elfinderStorage;
     }
+
+    public String getIcon() {
+        return volume.getIcon();
+    }
 }

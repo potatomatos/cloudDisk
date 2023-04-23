@@ -5,6 +5,7 @@ import java.util.Properties;
 public class Node {
     private String source;
     private String alias;
+    private String icon;
     private String path;
     private String locale;
     private Constraint constraint;
@@ -24,6 +25,14 @@ public class Node {
 
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
     public String getPath() {

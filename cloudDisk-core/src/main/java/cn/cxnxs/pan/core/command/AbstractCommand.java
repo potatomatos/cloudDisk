@@ -153,14 +153,11 @@ public abstract class AbstractCommand implements ElfinderCommand {
         if (target.isRoot()) {
             info.put(ElFinderConstants.ELFINDER_PARAMETER_DIRECTORY_FILE_NAME, target.getVolumeAlias());
             info.put(ElFinderConstants.ELFINDER_PARAMETER_VOLUME_ID, target.getVolumeId());
+            info.put(ElFinderConstants.ELFINDER_PARAMETER_ICON, target.getIcon());
         } else {
             info.put(ElFinderConstants.ELFINDER_PARAMETER_DIRECTORY_FILE_NAME, target.getName());
             info.put(ElFinderConstants.ELFINDER_PARAMETER_PARENTHASH, target.getParent().getHash());
         }
-
-        /*if (target.isFolder()) {
-            info.put(ElFinderConstants.ELFINDER_PARAMETER_HAS_DIR, target.hasChildFolder() ? ElFinderConstants.ELFINDER_TRUE_RESPONSE : ElFinderConstants.ELFINDER_FALSE_RESPONSE);
-        }*/
         return info;
     }
 

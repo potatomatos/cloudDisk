@@ -39,7 +39,7 @@ public class BaiduPanVolume implements Volume {
         this.rootDir = rootDir;
         this.rootTarget = new BaiduPanTarget(this, rootDir);
         this.baiduPanService = new BaiduPanService(nodeConfig.getConfig().getProperty("tokenKey"));
-        this.icon = nodeConfig.getConfig().getProperty("icon");
+        this.icon = nodeConfig.getIcon();
     }
 
     @SneakyThrows
