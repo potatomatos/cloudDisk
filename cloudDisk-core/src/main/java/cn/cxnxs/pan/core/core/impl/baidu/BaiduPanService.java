@@ -1,6 +1,7 @@
 package cn.cxnxs.pan.core.core.impl.baidu;
 
 import cn.cxnxs.pan.core.exception.ElFinderException;
+import cn.cxnxs.pan.core.exception.ElfinderConfigurationException;
 import cn.cxnxs.pan.core.util.FileHelper;
 import cn.cxnxs.pan.core.util.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -9,15 +10,16 @@ import com.arronlong.httpclientutil.common.HttpConfig;
 import com.arronlong.httpclientutil.common.HttpHeader;
 import com.arronlong.httpclientutil.common.HttpMethods;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Part;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +31,15 @@ import static cn.cxnxs.pan.core.core.impl.baidu.Constant.*;
 public class BaiduPanService {
 
     private static final Logger logger = LoggerFactory.getLogger(BaiduPanService.class);
+
+    private final String tokenKey;
+
+    public BaiduPanService(String tokenKey) {
+        if (StringUtils.isBlank(tokenKey)) {
+            throw new ElfinderConfigurationException("baidu tokenKey can not be empty");
+        }
+        this.tokenKey = tokenKey;
+    }
 
     public HttpConfig buildOption(String url) {
         HttpConfig httpConfig = HttpUtil.buildOption(url);
@@ -57,9 +68,9 @@ public class BaiduPanService {
     /**
      * 创建文件
      */
-    public void createFile(BaiduPanTarget target) throws HttpProcessException, IOException, ServletException {
+    public void createFile(BaiduPanTarget target) throws HttpProcessException, IOException, ServletException, NoSuchAlgorithmException {
         //0.创建临时文件夹
-        String tmpDirPath = SEPARATE_PATH + target.getAccessToken() + File.separator;
+        String tmpDirPath = SEPARATE_PATH + target.getAccessToken(tokenKey) + File.separator;
         File tmpDir = new File(tmpDirPath);
         if (!tmpDir.exists()) {
             tmpDir.mkdirs();
@@ -73,21 +84,21 @@ public class BaiduPanService {
         //将文件分片
         File[] separate = FileHelper.separate(uploadFile,uploadFile.getAbsolutePath()+".part", UNIT);
         // 计算每个分片的MD5
-        JSONArray blocklist = new JSONArray();
+        JSONArray blockList = new JSONArray();
         for (File file : separate) {
-            blocklist.add(FileHelper.getMD5(file));
+            blockList.add(FileHelper.getFileMD5(file,0));
         }
 
         //1.预上传
         Map<String, Object> param = new HashMap<>();
-        param.put("access_token", target.getAccessToken());
+        param.put("access_token", target.getAccessToken(tokenKey));
         param.put("method", "precreate");
         param.put("path", target.getPath());
         param.put("isdir", 0);
         param.put("autoinit", 1);
-        param.put("block_list", blocklist.toJSONString());
-        int fileSize = new FileInputStream(uploadFile).available();
-        param.put("size", fileSize);
+        param.put("block_list", blockList.toJSONString());
+        param.put("size", uploadFile.length());
+        param.put("slice-md5", FileHelper.getFileMD5(uploadFile,256));
         HttpConfig preCreateConfig = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
         logger.info("------预上传");
         JSONObject preCreateResult = HttpUtil.request(preCreateConfig);
@@ -96,10 +107,10 @@ public class BaiduPanService {
         }
 
         //2.分片上传
-        logger.info("------分片上传，文件总大小：{}，分片数：{}", fileSize, separate.length);
+        logger.info("------分片上传，文件总大小：{}，分片数：{}", uploadFile.length(), separate.length);
         for (int i = 0; i < separate.length; i++) {
             param = new HashMap<>();
-            param.put("access_token", target.getAccessToken());
+            param.put("access_token", target.getAccessToken(tokenKey));
             param.put("method", "upload");
             param.put("type", "tmpfile");
             param.put("path", target.getPath());
@@ -116,11 +127,11 @@ public class BaiduPanService {
         // 3.创建文件
         param = new HashMap<>();
         param.put("method","create");
-        param.put("access_token",target.getAccessToken());
+        param.put("access_token",target.getAccessToken(tokenKey));
         param.put("path",target.getPath());
-        param.put("size",fileSize);
+        param.put("size",uploadFile.length());
         param.put("isdir","0");
-        param.put("block_list",blocklist);
+        param.put("block_list",blockList);
         param.put("uploadid",preCreateResult.getString("uploadid"));
         HttpConfig createConfig = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
         HttpUtil.request(createConfig);
@@ -137,7 +148,7 @@ public class BaiduPanService {
     public void createFolder(BaiduPanTarget target) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","create");
-        param.put("access_token",target.getAccessToken());
+        param.put("access_token",target.getAccessToken(tokenKey));
         param.put("path",target.getPath());
         param.put("isdir",1);
         HttpConfig createConfig = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
@@ -152,7 +163,7 @@ public class BaiduPanService {
     public void deleteFile(BaiduPanTarget target) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","filemanager");
-        param.put("access_token",target.getAccessToken());
+        param.put("access_token",target.getAccessToken(tokenKey));
         param.put("opera","delete");
         param.put("async",1);
         JSONArray fileList = new JSONArray();
@@ -165,7 +176,7 @@ public class BaiduPanService {
     public void renameFile(BaiduPanTarget origin, BaiduPanTarget destination) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","filemanager");
-        param.put("access_token",origin.getAccessToken());
+        param.put("access_token",origin.getAccessToken(tokenKey));
         param.put("opera","rename");
         param.put("async",1);
         JSONArray fileList = new JSONArray();
@@ -186,7 +197,7 @@ public class BaiduPanService {
     public JSONObject getFileInfo(BaiduPanTarget target) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","filemetas");
-        param.put("access_token",target.getAccessToken());
+        param.put("access_token",target.getAccessToken(tokenKey));
         JSONArray fsids = new JSONArray();
         fsids.add(target.getFsId());
         param.put("fsids",fsids.toJSONString());
@@ -208,7 +219,7 @@ public class BaiduPanService {
     public JSONObject getFileList(BaiduPanTarget target,Integer folder) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","list");
-        param.put("access_token",target.getAccessToken());
+        param.put("access_token",target.getAccessToken(tokenKey));
         param.put("dir",target.getPath());
         param.put("folder",folder);
         param.put("showempty",1);
@@ -218,7 +229,7 @@ public class BaiduPanService {
 
     public InputStream downloadFile(BaiduPanTarget target,String url) throws HttpProcessException, IOException {
         Map<String,Object> param = new HashMap<>(1);
-        param.put("access_token",target.getAccessToken());
+        param.put("access_token",target.getAccessToken(tokenKey));
         HttpConfig config = this.buildOption(HttpUtil.buildUrl(url,param), HttpMethods.GET,HttpHeader.custom().host("d.pcs.baidu.com"));
         return HttpUtil.downloadFile(config);
     }

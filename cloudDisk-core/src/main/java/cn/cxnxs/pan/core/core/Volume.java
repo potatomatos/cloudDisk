@@ -50,4 +50,8 @@ public interface Volume {
     void rename(Target origin, Target destination) throws IOException;
 
     List<Target> search(String target) throws IOException;
+
+    default String getIcon(){
+        return "";
+    }
 }

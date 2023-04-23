@@ -29,6 +29,7 @@ public class BaiduPanVolume implements Volume {
     private final String source;
     private final Target rootTarget;
     private final String rootDir;
+    private final String icon;
 
     private final BaiduPanService baiduPanService;
 
@@ -37,7 +38,8 @@ public class BaiduPanVolume implements Volume {
         this.source = BAIDU.name();
         this.rootDir = rootDir;
         this.rootTarget = new BaiduPanTarget(this, rootDir);
-        this.baiduPanService = new BaiduPanService();
+        this.baiduPanService = new BaiduPanService(nodeConfig.getConfig().getProperty("tokenKey"));
+        this.icon = nodeConfig.getConfig().getProperty("icon");
     }
 
     @SneakyThrows
@@ -256,6 +258,11 @@ public class BaiduPanVolume implements Volume {
             }
         }
         return targets;
+    }
+
+    @Override
+    public String getIcon() {
+        return icon;
     }
 
     public static Builder builder(String alias, String rootDir, Node nodeConfig) {

@@ -1,50 +1,26 @@
 package cn.cxnxs.pan.core.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
 
 /**
  * 文件操作类
+ *
  * @author mengjinyuan
  */
 @Slf4j
 public class FileHelper {
-
-    private final static String[] STR_HEX = {"0", "1", "2", "3", "4", "5",
-            "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
-
-    /**
-     * 获取文件MD5
-     *
-     * @param file 需要计算的文件
-     */
-    public static String getMD5(File file) {
-        StringBuilder buffer = new StringBuilder();
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] b = md.digest(org.apache.commons.io.FileUtils.readFileToByteArray(file));
-            for (int value : b) {
-                int d = value;
-                if (d < 0) {
-                    d += 256;
-                }
-                int d1 = d / 16;
-                int d2 = d % 16;
-                buffer.append(STR_HEX[d1]).append(STR_HEX[d2]);
-            }
-            return buffer.toString();
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
     /**
      * @param inputFile 需要分片的文件
@@ -116,12 +92,50 @@ public class FileHelper {
         log.info("文件已成功合并至:{}", outputFileName);
     }
 
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
-    public static void main(String[] args) throws IOException {
-        File file = new File("C:\\temp\\test.iso");
-        log.info("文件路径：{}", file.getPath());
-        File[] separate = FileHelper.separate(file, "C:\\temp\\test.part", 32);
-        FileHelper.merge("C:\\temp\\data.iso", separate);
+    private static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int i = 0; i < bytes.length; i++) {
+            int v = bytes[i] & 0xFF;
+            hexChars[i * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[i * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
+    /**
+     * 获取文件MD5
+     *
+     * @param file 待计算的文件
+     * @param kb   要计算的大小（KB）
+     * @return
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
+    public static String getFileMD5(File file, int kb) throws IOException, NoSuchAlgorithmException {
+        if (!file.exists() || file.isDirectory()) {
+            throw new IOException("Invalid file path");
+        }
+        if (kb < 0) {
+            throw new InvalidParameterException("kb must greater than 0");
+        }
+        long fileSize = file.length();
+        if (fileSize < kb * 1024L || kb == 0) {
+            // 计算整个文件
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] mdBytes = md.digest(FileUtils.readFileToByteArray(file));
+            return bytesToHex(mdBytes);
+        } else {
+            // 计算前KB大小的MD5
+            byte[] data = new byte[kb * 1024];
+            FileInputStream fis = new FileInputStream(file);
+            fis.read(data);
+            fis.close();
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] mdBytes = md.digest(data);
+            return bytesToHex(mdBytes);
+        }
     }
 }
 

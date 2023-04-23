@@ -51,8 +51,8 @@ public class BaiduPanTarget implements Target {
         this.fileInfo = fileInfo;
     }
 
-    public String getAccessToken() {
+    public String getAccessToken(String tokenKey) {
         HttpServletRequest request = HttpUtil.getReq();
-        return request.getHeader("baidu_pan_token");
+        return request.getHeader(tokenKey);
     }
 }
