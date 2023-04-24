@@ -35,6 +35,8 @@ public final class ElFinderConstants {
     public static final String ELFINDER_PARAMETER_DIRECTORY_FILE_NAME = "name";
     public static final String ELFINDER_PARAMETER_VOLUME_ID = "volumeid";
     public static final String ELFINDER_PARAMETER_ICON = "icon";
+    public static final String ELFINDER_PARAMETER_SOURCE= "source";
+    public static final String ELFINDER_PARAMETER_EXTINFO= "extInfo";
     public static final String ELFINDER_PARAMETER_HAS_DIR = "dirs";
     public static final String ELFINDER_PARAMETER_PATH = "path";
     public static final String ELFINDER_PARAMETER_COMMAND_DISABLED = "disabled";

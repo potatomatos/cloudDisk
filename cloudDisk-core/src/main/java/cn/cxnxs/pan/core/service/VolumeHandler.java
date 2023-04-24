@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class VolumeHandler implements Serializable{
 
@@ -18,6 +19,7 @@ public class VolumeHandler implements Serializable{
     private final Target target;
     private final VolumeSecurity volumeSecurity;
     private final ElfinderStorage elfinderStorage;
+
 
     public VolumeHandler(Target target, ElfinderStorage elfinderStorage) {
         this.target = target;
@@ -148,5 +150,12 @@ public class VolumeHandler implements Serializable{
 
     public String getIcon() {
         return volume.getIcon();
+    }
+    public String getSource() {
+        return volume.getSource();
+    }
+
+    public Properties getExtInfo(){
+        return volume.getExtInfo();
     }
 }

@@ -22,7 +22,7 @@ public enum VolumeSources {
     FILESYSTEM {
         @Override
         public VolumeBuilder<?> getVolumeBuilder(String alias, String path, Node nodeConfig) {
-            return NIO2FileSystemVolume.builder(alias, Paths.get(ElfinderConfigurationUtils.toURI(path)));
+            return NIO2FileSystemVolume.builder(alias, Paths.get(ElfinderConfigurationUtils.toURI(path)),nodeConfig);
         }
     },
     BAIDU {

@@ -10,6 +10,7 @@ public class Node {
     private String locale;
     private Constraint constraint;
     private Properties config;
+    private Properties extInfo;
 
     public String getSource() {
         return source;
@@ -65,5 +66,13 @@ public class Node {
 
     public void setConfig(Properties config) {
         this.config = config;
+    }
+
+    public Properties getExtInfo() {
+        return extInfo;
+    }
+
+    public void setExtInfo(Properties extInfo) {
+        this.extInfo = extInfo;
     }
 }

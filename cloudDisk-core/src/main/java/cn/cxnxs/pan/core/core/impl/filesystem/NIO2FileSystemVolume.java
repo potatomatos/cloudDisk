@@ -3,6 +3,7 @@ package cn.cxnxs.pan.core.core.impl.filesystem;
 import cn.cxnxs.pan.core.core.Target;
 import cn.cxnxs.pan.core.core.Volume;
 import cn.cxnxs.pan.core.core.VolumeBuilder;
+import cn.cxnxs.pan.core.param.Node;
 import cn.cxnxs.pan.core.support.detect.Detector;
 import cn.cxnxs.pan.core.support.detect.NIO2FileTypeDetector;
 import cn.cxnxs.pan.core.support.nio.NioHelper;
@@ -15,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * NIO Filesystem Volume Implementation.
@@ -26,11 +28,15 @@ public class NIO2FileSystemVolume implements Volume {
     private final String alias;
     private final Path rootDir;
     private final Detector detector;
+    private final String source;
+    private final Properties extInfo;
 
     private NIO2FileSystemVolume(Builder builder) {
         this.alias = builder.alias;
         this.rootDir = builder.rootDir;
+        this.source = builder.nodeConfig.getSource();
         this.detector = new NIO2FileTypeDetector();
+        this.extInfo = builder.nodeConfig.getExtInfo();
         createRootDir();
     }
 
@@ -203,13 +209,23 @@ public class NIO2FileSystemVolume implements Volume {
         return Collections.unmodifiableList(targets);
     }
 
+    @Override
+    public String getSource() {
+        return this.source;
+    }
+
+    @Override
+    public Properties getExtInfo() {
+        return this.extInfo;
+    }
+
     /**
      * Gets a Builder for creating a new NIO2FileSystemVolume instance.
      *
      * @return a new Builder for NIO2FileSystemVolume.
      */
-    public static Builder builder(String alias, Path rootDir) {
-        return new Builder(alias, rootDir);
+    public static Builder builder(String alias, Path rootDir, Node nodeConfig) {
+        return new Builder(alias, rootDir,nodeConfig);
     }
 
     /**
@@ -219,10 +235,12 @@ public class NIO2FileSystemVolume implements Volume {
         // required fields
         private final String alias;
         private final Path rootDir;
+        private final Node nodeConfig;
 
-        public Builder(String alias, Path rootDir) {
+        public Builder(String alias, Path rootDir,Node nodeConfig) {
             this.alias = alias;
             this.rootDir = rootDir;
+            this.nodeConfig = nodeConfig;
         }
 
         @Override

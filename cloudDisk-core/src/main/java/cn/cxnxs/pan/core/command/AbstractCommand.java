@@ -136,7 +136,6 @@ public abstract class AbstractCommand implements ElfinderCommand {
 
     protected Map<String, Object> getTargetInfo(final HttpServletRequest request, final VolumeHandler target) throws IOException {
         Map<String, Object> info = new HashMap<>();
-
         info.put(ElFinderConstants.ELFINDER_PARAMETER_HASH, target.getHash());
         info.put(ElFinderConstants.ELFINDER_PARAMETER_MIME, target.getMimeType());
         info.put(ElFinderConstants.ELFINDER_PARAMETER_TIMESTAMP, target.getLastModified());
@@ -154,6 +153,8 @@ public abstract class AbstractCommand implements ElfinderCommand {
             info.put(ElFinderConstants.ELFINDER_PARAMETER_DIRECTORY_FILE_NAME, target.getVolumeAlias());
             info.put(ElFinderConstants.ELFINDER_PARAMETER_VOLUME_ID, target.getVolumeId());
             info.put(ElFinderConstants.ELFINDER_PARAMETER_ICON, target.getIcon());
+            info.put(ElFinderConstants.ELFINDER_PARAMETER_SOURCE, target.getSource());
+            info.put(ElFinderConstants.ELFINDER_PARAMETER_EXTINFO, target.getExtInfo());
         } else {
             info.put(ElFinderConstants.ELFINDER_PARAMETER_DIRECTORY_FILE_NAME, target.getName());
             info.put(ElFinderConstants.ELFINDER_PARAMETER_PARENTHASH, target.getParent().getHash());

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Properties;
 
 public interface Volume {
 
@@ -54,4 +55,8 @@ public interface Volume {
     default String getIcon(){
         return "";
     }
+
+    String getSource();
+
+    Properties getExtInfo();
 }

@@ -18,8 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import static cn.cxnxs.pan.core.service.VolumeSources.BAIDU;
+import java.util.Properties;
 
 
 @Slf4j
@@ -30,16 +29,18 @@ public class BaiduPanVolume implements Volume {
     private final Target rootTarget;
     private final String rootDir;
     private final String icon;
+    private final Properties extInfo;
 
     private final BaiduPanService baiduPanService;
 
-    public BaiduPanVolume(Builder builder, String rootDir, Node nodeConfig) {
+    public BaiduPanVolume(Builder builder) {
         this.alias = builder.alias;
-        this.source = BAIDU.name();
-        this.rootDir = rootDir;
+        this.source = builder.nodeConfig.getSource();
+        this.rootDir = builder.rootDir;
         this.rootTarget = new BaiduPanTarget(this, rootDir);
-        this.baiduPanService = new BaiduPanService(nodeConfig.getConfig().getProperty("tokenKey"));
-        this.icon = nodeConfig.getIcon();
+        this.baiduPanService = new BaiduPanService(builder.nodeConfig.getExtInfo().getProperty("tokenKey"));
+        this.icon = builder.nodeConfig.getIcon();
+        this.extInfo = builder.nodeConfig.getExtInfo();
     }
 
     @SneakyThrows
@@ -114,6 +115,11 @@ public class BaiduPanVolume implements Volume {
 
     public String getSource() {
         return this.source;
+    }
+
+    @Override
+    public Properties getExtInfo() {
+        return this.extInfo;
     }
 
     @SneakyThrows
@@ -271,18 +277,18 @@ public class BaiduPanVolume implements Volume {
 
     public static class Builder implements VolumeBuilder<BaiduPanVolume> {
         private final String alias;
-        private final String path;
+        private final String rootDir;
         private final Node nodeConfig;
 
         public Builder(String alias, String rootDir, Node nodeConfig) {
             this.alias = alias;
             this.nodeConfig = nodeConfig;
-            this.path = rootDir;
+            this.rootDir = rootDir;
         }
 
         @Override
         public BaiduPanVolume build() {
-            return new BaiduPanVolume(this, path, nodeConfig);
+            return new BaiduPanVolume(this);
         }
     }
 }
