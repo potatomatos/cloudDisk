@@ -29,6 +29,7 @@ public class NIO2FileSystemVolume implements Volume {
     private final Path rootDir;
     private final Detector detector;
     private final String source;
+    private final String icon;
     private final Properties extInfo;
 
     private NIO2FileSystemVolume(Builder builder) {
@@ -37,6 +38,7 @@ public class NIO2FileSystemVolume implements Volume {
         this.source = builder.nodeConfig.getSource();
         this.detector = new NIO2FileTypeDetector();
         this.extInfo = builder.nodeConfig.getExtInfo();
+        this.icon = builder.nodeConfig.getIcon();
         createRootDir();
     }
 
@@ -207,6 +209,11 @@ public class NIO2FileSystemVolume implements Volume {
             targets.add(fromPath(path));
         }
         return Collections.unmodifiableList(targets);
+    }
+
+    @Override
+    public String getIcon() {
+        return this.icon;
     }
 
     @Override
