@@ -4,6 +4,7 @@ import cn.cxnxs.pan.core.core.Target;
 import cn.cxnxs.pan.core.core.Volume;
 import cn.cxnxs.pan.core.core.VolumeBuilder;
 import cn.cxnxs.pan.core.param.Node;
+import cn.cxnxs.pan.core.util.FileHelper;
 import cn.cxnxs.pan.core.util.HashesUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -93,6 +94,9 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public String getMimeType(Target target) throws IOException {
+        if (isRoot(target)) {
+            return "directory";
+        }
         BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
         JSONObject fileInfo = baiduPanTarget.getFileInfo();
         if (fileInfo==null) {
@@ -101,11 +105,7 @@ public class BaiduPanVolume implements Volume {
         if (1==fileInfo.getInteger("isdir")) {
             return "directory";
         }
-        FileType category = FileType.getType(fileInfo.getInteger("category"));
-        if (category!=null) {
-            return category.name().toLowerCase();
-        }
-        return "other";
+        return FileHelper.getMime(fileInfo.getString("filename"));
     }
 
     @Override
@@ -125,6 +125,9 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public String getName(Target target) {
+        if (isRoot(target)) {
+            return this.alias;
+        }
         BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
         JSONObject fileInfo = baiduPanTarget.getFileInfo();
         if (fileInfo!=null) {
@@ -153,6 +156,9 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public long getSize(Target target) throws IOException {
+        if (isRoot(target)) {
+            return 0;
+        }
         BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
         JSONObject fileInfo = baiduPanTarget.getFileInfo();
         if (fileInfo!=null) {

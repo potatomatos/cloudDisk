@@ -1,7 +1,9 @@
 package cn.cxnxs.pan.core.util;
 
+import cn.hutool.core.io.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,7 +13,9 @@ import java.security.InvalidParameterException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -137,6 +141,90 @@ public class FileHelper {
             return bytesToHex(mdBytes);
         }
     }
+
+
+    private static final Map<String, String> mimeMap = new HashMap<>();
+
+    static {
+        mimeMap.put("3gp", "video/3gpp");
+        mimeMap.put("apk", "application/vnd.android.package-archive");
+        mimeMap.put("asf", "video/x-ms-asf");
+        mimeMap.put("avi", "video/x-msvideo");
+        mimeMap.put("bin", "application/octet-stream");
+        mimeMap.put("bmp", "image/bmp");
+        mimeMap.put("c", "text/x-c");
+        mimeMap.put("class", "application/octet-stream");
+        mimeMap.put("conf", "text/plain");
+        mimeMap.put("cpp", "text/x-c");
+        mimeMap.put("doc", "application/msword");
+        mimeMap.put("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        mimeMap.put("xls", "application/vnd.ms-excel");
+        mimeMap.put("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        mimeMap.put("exe", "application/octet-stream");
+        mimeMap.put("gif", "image/gif");
+        mimeMap.put("gtar", "application/x-gtar");
+        mimeMap.put("gz", "application/x-gzip");
+        mimeMap.put("h", "text/x-c");
+        mimeMap.put("htm", "text/html");
+        mimeMap.put("html", "text/html");
+        mimeMap.put("jar", "application/java-archive");
+        mimeMap.put("java", "text/x-java-source");
+        mimeMap.put("jpeg", "image/jpeg");
+        mimeMap.put("jpg", "image/jpeg");
+        mimeMap.put("js", "application/x-javascript");
+        mimeMap.put("log", "text/plain");
+        mimeMap.put("m3u", "audio/x-mpegurl");
+        mimeMap.put("m4a", "audio/mp4a-latm");
+        mimeMap.put("m4b", "audio/mp4a-latm");
+        mimeMap.put("m4p", "audio/mp4a-latm");
+        mimeMap.put("m4u", "video/vnd.mpegurl");
+        mimeMap.put("m4v", "video/x-m4v");
+        mimeMap.put("mov", "video/quicktime");
+        mimeMap.put("mp2", "audio/x-mpeg");
+        mimeMap.put("mp3", "audio/x-mpeg");
+        mimeMap.put("mp4", "video/mp4");
+        mimeMap.put("mpc", "application/vnd.mpohun.certificate");
+        mimeMap.put("mpe", "video/mpeg");
+        mimeMap.put("mpeg", "video/mpeg");
+        mimeMap.put("mpg", "video/mpeg");
+        mimeMap.put("mpg4", "video/mp4");
+        mimeMap.put("mpga", "audio/mpeg");
+        mimeMap.put("msg", "application/vnd.ms-outlook");
+        mimeMap.put("ogg", "audio/ogg");
+        mimeMap.put("pdf", "application/pdf");
+        mimeMap.put("png", "image/png");
+        mimeMap.put("pps", "application/vnd.ms-powerpoint");
+        mimeMap.put("ppt", "application/vnd.ms-powerpoint");
+        mimeMap.put("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+        mimeMap.put("prop", "text/plain");
+        mimeMap.put("rc", "text/plain");
+        mimeMap.put("rmvb", "audio/x-pn-realaudio");
+        mimeMap.put("rtf", "application/rtf");
+        mimeMap.put("sh", "text/plain");
+        mimeMap.put("tar", "application/x-tar");
+        mimeMap.put("tgz", "application/x-compressed");
+        mimeMap.put("txt", "text/plain");
+        mimeMap.put("wav", "audio/x-wav");
+        mimeMap.put("wma", "audio/x-ms-wma");
+        mimeMap.put("wmv", "audio/x-ms-wmv");
+        mimeMap.put("wps", "application/vnd.ms-works");
+        mimeMap.put("xml", "text/xml");
+        mimeMap.put("z", "application/x-compress");
+        mimeMap.put("zip", "application/x-zip-compressed");
+    }
+
+    public static String getMime(String filename) {
+        if (StringUtils.isBlank(filename)) {
+            return "";
+        }
+        String suffix = FileUtil.getSuffix(filename.toLowerCase());
+        String mime = mimeMap.get(suffix);
+        if (mime == null) {
+            mime = "application/octet-stream";
+        }
+        return mime;
+    }
+
 }
 
 
