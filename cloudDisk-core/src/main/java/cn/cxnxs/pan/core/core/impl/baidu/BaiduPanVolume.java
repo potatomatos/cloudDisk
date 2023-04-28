@@ -122,6 +122,11 @@ public class BaiduPanVolume implements Volume {
         return this.extInfo;
     }
 
+    @Override
+    public Target getTarget(Target target) throws HttpProcessException {
+        return this.getFileInfo((BaiduPanTarget) target);
+    }
+
     @SneakyThrows
     @Override
     public String getName(Target target) {

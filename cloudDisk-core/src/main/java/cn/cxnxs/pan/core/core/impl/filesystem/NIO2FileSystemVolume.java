@@ -226,6 +226,11 @@ public class NIO2FileSystemVolume implements Volume {
         return this.extInfo;
     }
 
+    @Override
+    public Target getTarget(Target target) {
+        return target;
+    }
+
     /**
      * Gets a Builder for creating a new NIO2FileSystemVolume instance.
      *

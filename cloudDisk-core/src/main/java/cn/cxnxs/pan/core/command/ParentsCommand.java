@@ -26,6 +26,7 @@ public class ParentsCommand extends AbstractJsonCommand implements ElfinderComma
             return;
         }
         while (!volumeHandler.isRoot()) {
+            volumeHandler.getVolume().getTarget(target);
             files.add(volumeHandler);
             volumeHandler = volumeHandler.getParent();
         }
