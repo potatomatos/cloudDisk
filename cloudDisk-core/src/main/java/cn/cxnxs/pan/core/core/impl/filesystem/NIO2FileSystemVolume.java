@@ -31,6 +31,7 @@ public class NIO2FileSystemVolume implements Volume {
     private final String source;
     private final String icon;
     private final Properties extInfo;
+    private static final String CMD_TMB_TARGET = "?cmd=tmb&target=%s";
 
     private NIO2FileSystemVolume(Builder builder) {
         this.alias = builder.alias;
@@ -227,8 +228,8 @@ public class NIO2FileSystemVolume implements Volume {
     }
 
     @Override
-    public Target getTarget(Target target) {
-        return target;
+    public String getTmb(Target target, String baseURL,String hash) {
+        return String.format(baseURL+CMD_TMB_TARGET, hash);
     }
 
     /**

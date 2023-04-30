@@ -1,7 +1,5 @@
 package cn.cxnxs.pan.core.core;
 
-import com.arronlong.httpclientutil.exception.HttpProcessException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -62,5 +60,5 @@ public interface Volume {
 
     Properties getExtInfo();
 
-    Target getTarget(Target target) throws HttpProcessException;
+    String getTmb(Target target, String baseURL,String hash) throws Exception;
 }

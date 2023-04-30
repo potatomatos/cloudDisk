@@ -24,7 +24,6 @@ public abstract class AbstractCommand implements ElfinderCommand {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String CMD_TMB_TARGET = "?cmd=tmb&target=%s";
     private final Map<String, Object> options = new HashMap<>();
 
     protected void addChildren(Map<String, VolumeHandler> map, VolumeHandler target) throws IOException {
@@ -107,8 +106,9 @@ public abstract class AbstractCommand implements ElfinderCommand {
             cwd = findTarget(elfinderStorage, target);
         }
 
-        if (cwd == null)
+        if (cwd == null) {
             cwd = new VolumeHandler(elfinderStorage.getVolumes().get(0).getRoot(), elfinderStorage);
+        }
 
         return cwd;
     }
@@ -126,15 +126,16 @@ public abstract class AbstractCommand implements ElfinderCommand {
             List<Target> targets = new ArrayList<>(targetHashes.length);
             for (String targetHash : targetHashes) {
                 Target target = elfinderStorage.fromHash(targetHash);
-                if (target != null)
+                if (target != null) {
                     targets.add(target);
+                }
             }
             return targets;
         }
         return Collections.emptyList();
     }
 
-    protected Map<String, Object> getTargetInfo(final HttpServletRequest request, final VolumeHandler target) throws IOException {
+    protected Map<String, Object> getTargetInfo(final HttpServletRequest request, final VolumeHandler target) throws Exception {
         Map<String, Object> info = new HashMap<>();
         info.put(ElFinderConstants.ELFINDER_PARAMETER_HASH, target.getHash());
         info.put(ElFinderConstants.ELFINDER_PARAMETER_MIME, target.getMimeType());
@@ -145,8 +146,7 @@ public abstract class AbstractCommand implements ElfinderCommand {
         info.put(ElFinderConstants.ELFINDER_PARAMETER_LOCKED, target.isLocked() ? ElFinderConstants.ELFINDER_TRUE_RESPONSE : ElFinderConstants.ELFINDER_FALSE_RESPONSE);
 
         if (target.getMimeType() != null && target.getMimeType().startsWith("image")) {
-            StringBuffer qs = request.getRequestURL();
-            info.put(ElFinderConstants.ELFINDER_PARAMETER_THUMBNAIL, qs.append(String.format(CMD_TMB_TARGET, target.getHash())));
+            info.put(ElFinderConstants.ELFINDER_PARAMETER_THUMBNAIL, target.getTmb(request.getRequestURI()));
         }
 
         if (target.isRoot()) {
@@ -195,9 +195,9 @@ public abstract class AbstractCommand implements ElfinderCommand {
         public void run()  {
             try {
                 jsonFileList.add(getTargetInfo(request, itemHandler));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            }finally {
+            } finally {
                 downLatch.countDown();
             }
         }

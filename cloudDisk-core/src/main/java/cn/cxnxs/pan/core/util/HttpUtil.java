@@ -1,5 +1,6 @@
 package cn.cxnxs.pan.core.util;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.arronlong.httpclientutil.HttpClientUtil;
 import com.arronlong.httpclientutil.builder.HCB;
@@ -17,9 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -95,9 +94,10 @@ public class HttpUtil {
 	 */
 	public static JSONObject request(HttpConfig httpConfig) throws HttpProcessException {
 		HttpResult httpResult = sendAndGet(httpConfig);
-		logger.info("result：{}", httpResult.getResult());
+		String result = httpResult.getResult();
+		logger.info("result：{}", result);
 		logger.info("-----------------------------");
-		return JSONObject.parseObject(httpResult.getResult());
+		return JSONObject.parseObject(result);
 	}
 
 	/**
@@ -108,14 +108,17 @@ public class HttpUtil {
 	 * @throws IOException
 	 */
 	public static InputStream downloadFile(HttpConfig httpConfig) throws HttpProcessException, IOException {
-		HttpResult httpResult = sendAndGet(httpConfig);
-		return httpResult.getResp().getEntity().getContent();
+		OutputStream outputStream = new ByteArrayOutputStream();
+		httpConfig.out(outputStream);
+		HttpClientUtil.down(httpConfig);
+		return convertOutputStreamToInputStream(outputStream);
 	}
 
 	public static HttpResult sendAndGet(HttpConfig httpConfig) throws HttpProcessException {
 		logger.info("-----------请求参数-----------");
 		logger.info("url:{}", httpConfig.url());
 		logger.info("parameter:{}", httpConfig.map());
+		logger.info("headers:{}", JSON.toJSONString(httpConfig.headers()));
 		logger.info("-----------------------------");
 		HttpResult httpResult = HttpClientUtil.sendAndGetResp(httpConfig);
 		logger.info("-----------------------------");
@@ -157,6 +160,56 @@ public class HttpUtil {
 		} else {
 			return url+"?"+asUrlParams(params);
 		}
+	}
+	public static InputStream convertOutputStreamToInputStream(OutputStream outputStream) {
+		return new ByteArrayInputStream(((ByteArrayOutputStream) outputStream).toByteArray());
+	}
+
+	public static OutputStream convertInputStreamToOutputStream(InputStream inputStream) throws IOException {
+		if (inputStream != null) {
+			ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+			int ch;
+			while ((ch = inputStream.read()) != -1) {
+				swapStream.write(ch);
+			}
+			return swapStream;
+		}
+		return null;
+	}
+
+	/**
+	 * 将OutputStream转成InputStream
+	 *
+	 * @param outputStream 输出流
+	 * @return 输入流
+	 * @throws IOException IO异常
+	 */
+	public static InputStream toInputStream(OutputStream outputStream) throws IOException {
+		return new InputStream() {
+			byte[] buf = new byte[1024];
+			int pos = 0;
+			int len = 0;
+			boolean isClosed = false;
+
+			@Override
+			public int read() throws IOException {
+				if (isClosed) {
+					return -1;
+				}
+				if (pos >= len) {
+					pos = 0;
+					outputStream.write(buf, 0, buf.length);
+				}
+				return buf[pos++] & 0xff;
+			}
+
+			@Override
+			public void close() throws IOException {
+				super.close();
+				isClosed = true;
+				outputStream.close();
+			}
+		};
 	}
 
 	public static void setReq(HttpServletRequest value){

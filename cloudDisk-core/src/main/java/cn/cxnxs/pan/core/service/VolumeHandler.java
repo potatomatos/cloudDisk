@@ -158,4 +158,8 @@ public class VolumeHandler implements Serializable{
     public Properties getExtInfo(){
         return volume.getExtInfo();
     }
+
+    public String getTmb(String baseURL) throws Exception {
+        return volume.getTmb(target,baseURL,this.getHash());
+    }
 }

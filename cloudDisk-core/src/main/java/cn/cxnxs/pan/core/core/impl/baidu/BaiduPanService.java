@@ -230,7 +230,7 @@ public class BaiduPanService {
     public InputStream downloadFile(BaiduPanTarget target,String url) throws HttpProcessException, IOException {
         Map<String,Object> param = new HashMap<>(1);
         param.put("access_token",target.getAccessToken(tokenKey));
-        HttpConfig config = this.buildOption(HttpUtil.buildUrl(url,param), HttpMethods.GET,HttpHeader.custom().host("d.pcs.baidu.com"));
+        HttpConfig config = this.buildOption(HttpUtil.buildUrl(url,param), HttpMethods.GET, HttpHeader.custom());
         return HttpUtil.downloadFile(config);
     }
 

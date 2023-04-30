@@ -4,6 +4,7 @@ import cn.cxnxs.pan.core.core.Target;
 import cn.cxnxs.pan.core.core.Volume;
 import cn.cxnxs.pan.core.util.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -53,6 +54,39 @@ public class BaiduPanTarget implements Target {
 
     public String getAccessToken(String tokenKey) {
         HttpServletRequest request = HttpUtil.getReq();
-        return request.getHeader(tokenKey);
+        String token = request.getHeader(tokenKey);
+        if (StringUtils.isEmpty(token)) {
+            token = request.getParameter(tokenKey);
+        }
+        return token;
+    }
+
+    public static class TargetInfo {
+        private String path;
+        private Long fsId;
+
+        public TargetInfo() {
+        }
+
+        public TargetInfo(String path, Long fsId) {
+            this.path = path;
+            this.fsId = fsId;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public Long getFsId() {
+            return fsId;
+        }
+
+        public void setFsId(Long fsId) {
+            this.fsId = fsId;
+        }
     }
 }

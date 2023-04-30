@@ -6,7 +6,6 @@ import cn.cxnxs.pan.core.service.VolumeHandler;
 import com.alibaba.fastjson.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +25,6 @@ public class ParentsCommand extends AbstractJsonCommand implements ElfinderComma
             return;
         }
         while (!volumeHandler.isRoot()) {
-            volumeHandler.getVolume().getTarget(target);
             files.add(volumeHandler);
             volumeHandler = volumeHandler.getParent();
         }
@@ -34,7 +32,7 @@ public class ParentsCommand extends AbstractJsonCommand implements ElfinderComma
         objects = files.stream().map(handler -> {
             try {
                 return getTargetInfo(request, handler);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;

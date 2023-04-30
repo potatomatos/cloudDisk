@@ -6,14 +6,16 @@ import cn.cxnxs.pan.core.core.VolumeBuilder;
 import cn.cxnxs.pan.core.param.Node;
 import cn.cxnxs.pan.core.util.FileHelper;
 import cn.cxnxs.pan.core.util.HashesUtil;
+import cn.cxnxs.pan.core.util.HttpUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -77,7 +79,7 @@ public class BaiduPanVolume implements Volume {
 
     @Override
     public Target fromPath(String path) {
-        return new BaiduPanTarget(this, path);
+        return this.buildTarget(path);
     }
 
     @SneakyThrows
@@ -113,6 +115,7 @@ public class BaiduPanVolume implements Volume {
         return this.alias;
     }
 
+    @Override
     public String getSource() {
         return this.source;
     }
@@ -123,8 +126,13 @@ public class BaiduPanVolume implements Volume {
     }
 
     @Override
-    public Target getTarget(Target target) throws HttpProcessException {
-        return this.getFileInfo((BaiduPanTarget) target);
+    public String getTmb(Target target, String baseURL, String hash) throws HttpProcessException {
+        BaiduPanTarget baiduPanTarget = this.getFileInfo((BaiduPanTarget) target);
+        JSONObject fileInfo = baiduPanTarget.getFileInfo();
+        if (fileInfo!=null) {
+            return (String) JSONPath.eval(fileInfo,"$['thumbs']['url3']");
+        }
+        return "";
     }
 
     @SneakyThrows
@@ -150,7 +158,8 @@ public class BaiduPanVolume implements Volume {
 
     @Override
     public String getPath(Target target) {
-        return ((BaiduPanTarget) target).getPath();
+        BaiduPanTarget baiduPanTarget = (BaiduPanTarget) target;
+        return JSON.toJSONString(new BaiduPanTarget.TargetInfo(baiduPanTarget.getPath(),baiduPanTarget.getFsId()));
     }
 
     @Override
@@ -243,15 +252,7 @@ public class BaiduPanVolume implements Volume {
     @Override
     public OutputStream openOutputStream(Target target) throws IOException {
         InputStream inputStream = this.openInputStream(target);
-        if (inputStream != null) {
-            ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
-            int ch;
-            while ((ch = inputStream.read()) != -1) {
-                swapStream.write(ch);
-            }
-            return swapStream;
-        }
-        return null;
+        return HttpUtil.convertInputStreamToOutputStream(inputStream);
     }
 
     @SneakyThrows
@@ -280,6 +281,11 @@ public class BaiduPanVolume implements Volume {
     @Override
     public String getIcon() {
         return icon;
+    }
+
+    private BaiduPanTarget buildTarget(String data) {
+        BaiduPanTarget.TargetInfo targetInfo = JSONObject.parseObject(data, BaiduPanTarget.TargetInfo.class);
+        return new BaiduPanTarget(this,targetInfo.getPath(),targetInfo.getFsId());
     }
 
     public static Builder builder(String alias, String rootDir, Node nodeConfig) {
