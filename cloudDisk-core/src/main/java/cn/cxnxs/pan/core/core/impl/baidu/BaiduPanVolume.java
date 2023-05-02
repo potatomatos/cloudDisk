@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 
@@ -152,8 +153,34 @@ public class BaiduPanVolume implements Volume {
     @Override
     public Target getParent(Target target) {
         BaiduPanTarget baiduPanTarget = (BaiduPanTarget) target;
-        String path = HashesUtil.getParentFolderPath(baiduPanTarget.getPath());
-        return new BaiduPanTarget(this, path);
+        if (baiduPanTarget.getParent()!=null){
+            return baiduPanTarget.getParent();
+        }
+        String parentPath = HashesUtil.getParentFolderPath(baiduPanTarget.getPath());
+        if (Objects.equals(rootDir,parentPath)) {
+            return rootTarget;
+        }
+        String dir = HashesUtil.getParentFolderPath(parentPath);
+        String key = FileHelper.getFilename(parentPath);
+        try {
+            JSONObject result = this.baiduPanService.search(null,dir,key);
+            if (result.getInteger("errno") == 0) {
+                JSONArray list = result.getJSONArray("list");
+                for (int i = 0; i < list.size(); i++) {
+                    JSONObject fileInfo = list.getJSONObject(i);
+                    if (Objects.equals(key,fileInfo.getString("server_filename"))) {
+                        fileInfo.put("filename",fileInfo.getString("server_filename"));
+                        BaiduPanTarget parent = new BaiduPanTarget(this, parentPath,fileInfo.getLong("fs_id"));
+                        parent.setFileInfo(fileInfo);
+                        baiduPanTarget.setParent(parent);
+                        return parent;
+                    }
+                }
+            }
+        } catch (HttpProcessException e) {
+            e.printStackTrace();
+        }
+        return new BaiduPanTarget(this, parentPath);
     }
 
     @Override
@@ -209,13 +236,15 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public Target[] listChildren(Target target) throws IOException {
-        JSONObject result = this.baiduPanService.getFileList((BaiduPanTarget) target, 0);
+        BaiduPanTarget baiduPanTarget = (BaiduPanTarget) target;
+        JSONObject result = this.baiduPanService.getFileList(baiduPanTarget, 0);
         if (result.getInteger("errno") == 0) {
             JSONArray list = result.getJSONArray("list");
             BaiduPanTarget[] targets = new BaiduPanTarget[list.size()];
             for (int i = 0; i < list.size(); i++) {
                 JSONObject jsonObject = list.getJSONObject(i);
-                targets[i] = new BaiduPanTarget(this,
+                targets[i] = new BaiduPanTarget(baiduPanTarget,
+                        this,
                         jsonObject.getString("path"),
                         jsonObject.getLong("fs_id"));
             }
@@ -264,7 +293,7 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public List<Target> search(String target) {
-        JSONObject result = this.baiduPanService.search(target);
+        JSONObject result = this.baiduPanService.search(1,null,target);
         List<Target> targets = new ArrayList<>();
         if (result.getInteger("errno") == 0) {
             JSONArray list = result.getJSONArray("list");

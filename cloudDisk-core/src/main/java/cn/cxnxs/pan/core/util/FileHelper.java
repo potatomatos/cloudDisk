@@ -225,6 +225,10 @@ public class FileHelper {
         return mime;
     }
 
+    public static String getFilename(String filepath){
+        return filepath.substring(filepath.lastIndexOf("/")+1);
+    }
+
 }
 
 

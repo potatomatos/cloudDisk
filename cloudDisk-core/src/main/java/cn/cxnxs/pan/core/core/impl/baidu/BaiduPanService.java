@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
@@ -70,7 +71,7 @@ public class BaiduPanService {
      */
     public void createFile(BaiduPanTarget target) throws HttpProcessException, IOException, ServletException, NoSuchAlgorithmException {
         //0.创建临时文件夹
-        String tmpDirPath = SEPARATE_PATH + target.getAccessToken(tokenKey) + File.separator;
+        String tmpDirPath = SEPARATE_PATH + getAccessToken(tokenKey) + File.separator;
         File tmpDir = new File(tmpDirPath);
         if (!tmpDir.exists()) {
             tmpDir.mkdirs();
@@ -91,7 +92,7 @@ public class BaiduPanService {
 
         //1.预上传
         Map<String, Object> param = new HashMap<>();
-        param.put("access_token", target.getAccessToken(tokenKey));
+        param.put("access_token", getAccessToken(tokenKey));
         param.put("method", "precreate");
         param.put("path", target.getPath());
         param.put("isdir", 0);
@@ -110,7 +111,7 @@ public class BaiduPanService {
         logger.info("------分片上传，文件总大小：{}，分片数：{}", uploadFile.length(), separate.length);
         for (int i = 0; i < separate.length; i++) {
             param = new HashMap<>();
-            param.put("access_token", target.getAccessToken(tokenKey));
+            param.put("access_token", getAccessToken(tokenKey));
             param.put("method", "upload");
             param.put("type", "tmpfile");
             param.put("path", target.getPath());
@@ -127,7 +128,7 @@ public class BaiduPanService {
         // 3.创建文件
         param = new HashMap<>();
         param.put("method","create");
-        param.put("access_token",target.getAccessToken(tokenKey));
+        param.put("access_token",getAccessToken(tokenKey));
         param.put("path",target.getPath());
         param.put("size",uploadFile.length());
         param.put("isdir","0");
@@ -148,7 +149,7 @@ public class BaiduPanService {
     public void createFolder(BaiduPanTarget target) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","create");
-        param.put("access_token",target.getAccessToken(tokenKey));
+        param.put("access_token",getAccessToken(tokenKey));
         param.put("path",target.getPath());
         param.put("isdir",1);
         HttpConfig createConfig = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
@@ -163,7 +164,7 @@ public class BaiduPanService {
     public void deleteFile(BaiduPanTarget target) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","filemanager");
-        param.put("access_token",target.getAccessToken(tokenKey));
+        param.put("access_token",getAccessToken(tokenKey));
         param.put("opera","delete");
         param.put("async",1);
         JSONArray fileList = new JSONArray();
@@ -176,7 +177,7 @@ public class BaiduPanService {
     public void renameFile(BaiduPanTarget origin, BaiduPanTarget destination) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","filemanager");
-        param.put("access_token",origin.getAccessToken(tokenKey));
+        param.put("access_token",getAccessToken(tokenKey));
         param.put("opera","rename");
         param.put("async",1);
         JSONArray fileList = new JSONArray();
@@ -197,7 +198,7 @@ public class BaiduPanService {
     public JSONObject getFileInfo(BaiduPanTarget target) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","filemetas");
-        param.put("access_token",target.getAccessToken(tokenKey));
+        param.put("access_token",getAccessToken(tokenKey));
         JSONArray fsids = new JSONArray();
         fsids.add(target.getFsId());
         param.put("fsids",fsids.toJSONString());
@@ -219,7 +220,7 @@ public class BaiduPanService {
     public JSONObject getFileList(BaiduPanTarget target,Integer folder) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","list");
-        param.put("access_token",target.getAccessToken(tokenKey));
+        param.put("access_token",getAccessToken(tokenKey));
         param.put("dir",target.getPath());
         param.put("folder",folder);
         param.put("showempty",1);
@@ -229,21 +230,35 @@ public class BaiduPanService {
 
     public InputStream downloadFile(BaiduPanTarget target,String url) throws HttpProcessException, IOException {
         Map<String,Object> param = new HashMap<>(1);
-        param.put("access_token",target.getAccessToken(tokenKey));
+        param.put("access_token",getAccessToken(tokenKey));
         HttpConfig config = this.buildOption(HttpUtil.buildUrl(url,param), HttpMethods.GET, HttpHeader.custom());
         return HttpUtil.downloadFile(config);
     }
 
-    public JSONObject search(String key) throws HttpProcessException {
+    public JSONObject search(Integer recursion,String dir,String key) throws HttpProcessException {
         Map<String,Object> param = new HashMap<>();
         param.put("method","search");
-        param.put("access_token",HttpUtil.getReq().getHeader("baidu_pan_token"));
+        param.put("access_token",getAccessToken(tokenKey));
+        if (StringUtils.isNotEmpty(dir)) {
+            param.put("dir",dir);
+        }
         param.put("key",key);
-        // 递归搜索
-        param.put("recursion",1);
+        if (recursion!=null) {
+            // 递归搜索
+            param.put("recursion",recursion);
+        }
         param.put("web",1);
         HttpConfig config = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.GET);
         return HttpUtil.request(config);
+    }
+
+    public String getAccessToken(String tokenKey) {
+        HttpServletRequest request = HttpUtil.getReq();
+        String token = request.getHeader(tokenKey);
+        if (StringUtils.isEmpty(token)) {
+            token = request.getParameter(tokenKey);
+        }
+        return token;
     }
 
 }

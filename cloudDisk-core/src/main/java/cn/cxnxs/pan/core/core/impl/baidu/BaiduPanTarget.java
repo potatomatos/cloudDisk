@@ -2,11 +2,7 @@ package cn.cxnxs.pan.core.core.impl.baidu;
 
 import cn.cxnxs.pan.core.core.Target;
 import cn.cxnxs.pan.core.core.Volume;
-import cn.cxnxs.pan.core.util.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author potatomato
@@ -16,9 +12,18 @@ public class BaiduPanTarget implements Target {
 
     private JSONObject fileInfo;
 
+    private BaiduPanTarget parent;
+
     private final String path;
 
     private Long fsId;
+
+    public BaiduPanTarget(BaiduPanTarget parent,Volume volume, String path, Long fsId) {
+        this.parent = parent;
+        this.volume = volume;
+        this.path = path;
+        this.fsId = fsId;
+    }
 
     public BaiduPanTarget(Volume volume, String path, Long fsId) {
         this.volume = volume;
@@ -52,15 +57,6 @@ public class BaiduPanTarget implements Target {
         this.fileInfo = fileInfo;
     }
 
-    public String getAccessToken(String tokenKey) {
-        HttpServletRequest request = HttpUtil.getReq();
-        String token = request.getHeader(tokenKey);
-        if (StringUtils.isEmpty(token)) {
-            token = request.getParameter(tokenKey);
-        }
-        return token;
-    }
-
     public static class TargetInfo {
         private String path;
         private Long fsId;
@@ -88,5 +84,13 @@ public class BaiduPanTarget implements Target {
         public void setFsId(Long fsId) {
             this.fsId = fsId;
         }
+    }
+
+    public BaiduPanTarget getParent() {
+        return parent;
+    }
+
+    public void setParent(BaiduPanTarget parent) {
+        this.parent = parent;
     }
 }
