@@ -4,12 +4,14 @@ import cn.cxnxs.pan.core.exception.ElFinderException;
 import cn.cxnxs.pan.core.exception.ElfinderConfigurationException;
 import cn.cxnxs.pan.core.util.FileHelper;
 import cn.cxnxs.pan.core.util.HttpUtil;
+import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.arronlong.httpclientutil.common.HttpConfig;
 import com.arronlong.httpclientutil.common.HttpHeader;
 import com.arronlong.httpclientutil.common.HttpMethods;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +19,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,21 +66,17 @@ public class BaiduPanService {
         return httpConfig;
     }
 
-    /**
-     * 创建文件
-     */
-    public void createFile(BaiduPanTarget target) throws HttpProcessException, IOException, ServletException, NoSuchAlgorithmException {
+    public void createFile(BaiduPanTarget target, InputStream is) throws IOException, NoSuchAlgorithmException, HttpProcessException {
         //0.创建临时文件夹
         String tmpDirPath = SEPARATE_PATH + getAccessToken(tokenKey) + File.separator;
-        File tmpDir = new File(tmpDirPath);
-        if (!tmpDir.exists()) {
-            tmpDir.mkdirs();
-        }
+        FileUtil.mkdir(tmpDirPath);
+        String filename = FileUtil.getName(target.getPath());
         // 创建文件
-        Part part = HttpUtil.getFile();
         // 将文件写入临时文件夹
-        String filename = part.getName();
-        part.write(tmpDirPath + filename);
+        OutputStream os = new FileOutputStream(tmpDirPath+filename);
+        IOUtils.copy(is, os);
+        os.close();
+        is.close();
         File uploadFile = new File(tmpDirPath + filename);
         //将文件分片
         File[] separate = FileHelper.separate(uploadFile,uploadFile.getAbsolutePath()+".part", UNIT);
@@ -138,6 +134,15 @@ public class BaiduPanService {
         HttpUtil.request(createConfig);
         //删除临时文件
         uploadFile.deleteOnExit();
+    }
+
+
+    /**
+     * 创建文件
+     */
+    public void createFile(BaiduPanTarget target) throws HttpProcessException, IOException, ServletException, NoSuchAlgorithmException {
+        Part part = HttpUtil.getFile();
+        this.createFile(target,part.getInputStream());
     }
 
 

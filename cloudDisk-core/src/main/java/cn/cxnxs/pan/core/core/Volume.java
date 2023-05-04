@@ -1,8 +1,11 @@
 package cn.cxnxs.pan.core.core;
 
+import com.arronlong.httpclientutil.exception.HttpProcessException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Properties;
 
@@ -51,6 +54,9 @@ public interface Volume {
     void rename(Target origin, Target destination) throws IOException;
 
     List<Target> search(String target) throws IOException;
+
+
+    void putFile(Target target, InputStream inputStream) throws IOException, NoSuchAlgorithmException, HttpProcessException;
 
     default String getIcon(){
         return "";

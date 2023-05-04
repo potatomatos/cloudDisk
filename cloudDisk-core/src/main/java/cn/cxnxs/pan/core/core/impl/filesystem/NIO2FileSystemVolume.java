@@ -7,6 +7,7 @@ import cn.cxnxs.pan.core.param.Node;
 import cn.cxnxs.pan.core.support.detect.Detector;
 import cn.cxnxs.pan.core.support.detect.NIO2FileTypeDetector;
 import cn.cxnxs.pan.core.support.nio.NioHelper;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -210,6 +211,18 @@ public class NIO2FileSystemVolume implements Volume {
             targets.add(fromPath(path));
         }
         return Collections.unmodifiableList(targets);
+    }
+
+    @Override
+    public void putFile(Target target, InputStream is) {
+        try {
+            OutputStream os = NioHelper.openOutputStream(fromTarget(target));
+            IOUtils.copy(is, os);
+            os.close();
+            is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

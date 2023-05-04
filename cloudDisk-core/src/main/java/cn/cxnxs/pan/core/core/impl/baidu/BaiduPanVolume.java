@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -307,14 +308,24 @@ public class BaiduPanVolume implements Volume {
         return targets;
     }
 
+
+    @Override
+    public void putFile(Target target, InputStream inputStream) throws IOException, NoSuchAlgorithmException, HttpProcessException {
+        this.baiduPanService.createFile((BaiduPanTarget) target,inputStream);
+    }
+
     @Override
     public String getIcon() {
         return icon;
     }
 
     private BaiduPanTarget buildTarget(String data) {
-        BaiduPanTarget.TargetInfo targetInfo = JSONObject.parseObject(data, BaiduPanTarget.TargetInfo.class);
-        return new BaiduPanTarget(this,targetInfo.getPath(),targetInfo.getFsId());
+        try {
+            BaiduPanTarget.TargetInfo targetInfo = JSONObject.parseObject(data, BaiduPanTarget.TargetInfo.class);
+            return new BaiduPanTarget(this,targetInfo.getPath(),targetInfo.getFsId());
+        }catch (RuntimeException e) {
+            return new BaiduPanTarget(this,data,null);
+        }
     }
 
     public static Builder builder(String alias, String rootDir, Node nodeConfig) {
