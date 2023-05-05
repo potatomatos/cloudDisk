@@ -1,7 +1,5 @@
 package cn.cxnxs.pan.core.command;
 
-
-
 import cn.cxnxs.pan.core.ElFinderConstants;
 import cn.cxnxs.pan.core.core.Target;
 import cn.cxnxs.pan.core.core.Volume;
@@ -13,17 +11,22 @@ import com.alibaba.fastjson.JSONObject;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SearchCommand extends AbstractJsonCommand implements ElfinderCommand {
 
     @Override
-    protected void execute(ElfinderStorage elfinderStorage, HttpServletRequest request, JSONObject json) throws Exception {
+    protected void execute(ElfinderStorage elfinderStorage, HttpServletRequest request, JSONObject json) {
 
         final String query = request.getParameter(ElFinderConstants.ELFINDER_PARAMETER_SEARCH_QUERY);
 
         try {
-            List<Object> objects = null;
+            List<Object> objects = new ArrayList<>();
             List<Volume> volumes = elfinderStorage.getVolumes();
+            ExecutorService executor = Executors.newCachedThreadPool();
+
             for (Volume volume : volumes) {
 
                 // checks volume security
@@ -37,21 +40,25 @@ public class SearchCommand extends AbstractJsonCommand implements ElfinderComman
                     List<Target> targets = volume.search(query);
 
                     if (targets != null) {
-
-                        // init object list
-                        if (objects == null) {
-                            objects = new ArrayList<>(targets.size());
-                        }
-
-                        // adds targets info in the return list
+                        CountDownLatch latch = new CountDownLatch(targets.size());
                         for (Target target : targets) {
-                            objects.add(getTargetInfo(request, new VolumeHandler(target, elfinderStorage)));
+                            executor.submit(() -> {
+                                try {
+                                    objects.add(getTargetInfo(request, new VolumeHandler(target, elfinderStorage)));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                } finally {
+                                    latch.countDown();
+                                }
+                            });
                         }
+                        latch.await();
                     }
                 }
             }
+            executor.shutdown();
 
-            Object[] objectArray = objects != null ? objects.toArray() : new Object[0];
+            Object[] objectArray = objects.toArray();
             json.put(ElFinderConstants.ELFINDER_PARAMETER_FILES, objectArray);
 
         } catch (Exception e) {
