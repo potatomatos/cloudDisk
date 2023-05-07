@@ -134,10 +134,11 @@ public class UploadCommand extends AbstractJsonCommand implements ElfinderComman
                 totalSize += part._size;
             }
 
-            if (totalSize != _totalSize)
+            if (totalSize != _totalSize) {
                 throw new IOException(String.format(
                         "invalid file size: excepted %d, but is %d",
                         _totalSize, totalSize));
+            }
         }
 
         public void removeFromApplicationContext(HttpServletRequest request)
