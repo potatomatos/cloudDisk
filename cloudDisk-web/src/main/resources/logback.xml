@@ -77,6 +77,7 @@
     <!-- Spring日志级别控制  -->
     <logger name="org.springframework" level="warn"/>
     <logger name="com.alibaba.nacos.client.config" level="warn"/>
+    <logger name="cn.cxnxs.pan.core.command.UploadCommand" level="debug"/>
 
     <!--系统操作日志-->
     <root level="info">
