@@ -55,9 +55,9 @@
             <version>1.2.75</version>
         </dependency>
         <dependency>
-            <groupId>com.arronlong</groupId>
-            <artifactId>httpclientutil</artifactId>
-            <version>1.0.4</version>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.14.9</version>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>

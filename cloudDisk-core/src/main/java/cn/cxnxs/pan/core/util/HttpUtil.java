@@ -12,6 +12,7 @@ import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.misc.Request;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -56,6 +57,12 @@ public class HttpUtil {
 
 		return "filename=\"" + URLEncoder.encode(fileName, "UTF8") + "\"";
 	}
+
+	public static Request buildOption(String url, HttpMethods method){
+
+	}
+
+
 
 	public static HttpConfig buildOption(String url, HttpMethods method) {
 		HttpHeader httpHeader = HttpHeader.custom().userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.81 Safari/537.36 SE 2.X MetaSr 1.0");
@@ -117,7 +124,7 @@ public class HttpUtil {
 	public static HttpResult sendAndGet(HttpConfig httpConfig) throws HttpProcessException {
 		logger.info("-----------请求参数-----------");
 		logger.info("url:{}", httpConfig.url());
-		logger.info("parameter:{}", httpConfig.map());
+//		logger.info("parameter:{}", httpConfig.map());
 		logger.info("headers:{}", JSON.toJSONString(httpConfig.headers()));
 		logger.info("-----------------------------");
 		HttpResult httpResult = HttpClientUtil.sendAndGetResp(httpConfig);

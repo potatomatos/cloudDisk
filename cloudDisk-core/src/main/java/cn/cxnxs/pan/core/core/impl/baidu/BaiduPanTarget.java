@@ -16,19 +16,10 @@ public class BaiduPanTarget implements Target {
 
     private final String path;
 
-    private Long fsId;
-
-    public BaiduPanTarget(BaiduPanTarget parent,Volume volume, String path, Long fsId) {
+    public BaiduPanTarget(BaiduPanTarget parent,Volume volume, String path){
         this.parent = parent;
         this.volume = volume;
         this.path = path;
-        this.fsId = fsId;
-    }
-
-    public BaiduPanTarget(Volume volume, String path, Long fsId) {
-        this.volume = volume;
-        this.path = path;
-        this.fsId = fsId;
     }
 
     public BaiduPanTarget(Volume volume, String path) {
@@ -42,11 +33,27 @@ public class BaiduPanTarget implements Target {
     }
 
     public String getPath() {
+        int index = path.indexOf(":\\");
+        if (index!=-1) {
+            return path.substring(index+2);
+        }
         return path;
     }
 
     public Long getFsId() {
-        return fsId;
+        try {
+            int index = path.indexOf(":\\");
+            if (index!=-1){
+                String fsIdStr = path.substring(0,index);
+                return Long.parseLong(fsIdStr);
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
     }
 
     public JSONObject getFileInfo() {
@@ -55,35 +62,6 @@ public class BaiduPanTarget implements Target {
 
     public void setFileInfo(JSONObject fileInfo) {
         this.fileInfo = fileInfo;
-    }
-
-    public static class TargetInfo {
-        private String path;
-        private Long fsId;
-
-        public TargetInfo() {
-        }
-
-        public TargetInfo(String path, Long fsId) {
-            this.path = path;
-            this.fsId = fsId;
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public void setPath(String path) {
-            this.path = path;
-        }
-
-        public Long getFsId() {
-            return fsId;
-        }
-
-        public void setFsId(Long fsId) {
-            this.fsId = fsId;
-        }
     }
 
     public BaiduPanTarget getParent() {

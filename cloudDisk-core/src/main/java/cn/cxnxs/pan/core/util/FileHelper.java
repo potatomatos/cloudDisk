@@ -27,52 +27,61 @@ import java.util.Map;
 public class FileHelper {
 
     /**
+     * 文件分片
+     *
      * @param inputFile 需要分片的文件
-     * @param output    输出文件夹
-     * @param unit      分片大小（MB）
+     * @param dir       输出文件夹
+     * @param chunkSize 分片大小（MB）
+     * @return 分片文件列表
+     * @throws IOException
      */
-    public static File[] separate(File inputFile, String output, Integer unit) throws IOException {
-        File outputDir = new File(output);
+    public static File[] separate(File inputFile, String dir, int chunkSize) throws IOException {
+        File outputDir = new File(dir);
         if (!outputDir.exists()) {
-            // 创建输出文件夹
             boolean flag = outputDir.mkdirs();
             if (flag) {
-                log.info("输出文件夹创建成功");
+                log.info("文件夹[{}]创建成功", dir);
             } else {
-                log.error("输出文件夹创建失败！");
+                log.error("文件夹[{}]创建失败", dir);
                 return new File[0];
             }
         }
+
         FileInputStream inputStream = new FileInputStream(inputFile);
-        byte[] buffer = new byte[unit * 1024 * 1024];
+        int chunkUnit = chunkSize * 1024 * 1024;
+        if (inputFile.length() <= chunkUnit) {
+            log.info("文件小于{}MB,无需分片", chunkSize);
+            return new File[]{inputFile};
+        }
+
+        log.info("文件开始分片...");
+        byte[] buffer = new byte[chunkUnit];
         int bytesRead;
         int count = 0;
-        List<String> fileNames = new ArrayList<>();
+        List<String> filenames = new ArrayList<>();
         while ((bytesRead = inputStream.read(buffer)) > 0) {
-            String chunkFileName = output + File.separator + inputFile.getName() + ".part" + String.format("%03d", count++);
-            fileNames.add(chunkFileName);
+            String chunkFileName = outputDir + File.separator + inputFile.getName() + ".part" + String.format("%03d", count++);
+            filenames.add(chunkFileName);
             FileOutputStream outputStream = new FileOutputStream(chunkFileName);
             outputStream.write(buffer, 0, bytesRead);
             outputStream.close();
         }
-        log.info("文件分片完成");
         inputStream.close();
-        //返回被分片的文件
-        List<File> returnFiles = new ArrayList<>();
-        if (outputDir.isDirectory()) {
+        log.info("文件分片完成！");
+
+        List<File> sliceFiles = new ArrayList<>();
+        if (outputDir.exists() && outputDir.isDirectory()) {
             File[] files = outputDir.listFiles();
             assert files != null;
-            for (String fileName : fileNames) {
+            for (String filename : filenames) {
                 for (File file : files) {
-                    if (fileName.equals(file.getAbsolutePath())) {
-                        returnFiles.add(file);
+                    if (filename.equals(file.getAbsolutePath())) {
+                        sliceFiles.add(file);
                     }
                 }
             }
-            return returnFiles.toArray(new File[0]);
         }
-
-        return new File[0];
+        return sliceFiles.toArray(new File[0]);
     }
 
     /**
@@ -105,7 +114,7 @@ public class FileHelper {
             hexChars[i * 2] = HEX_ARRAY[v >>> 4];
             hexChars[i * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
-        return new String(hexChars);
+        return new String(hexChars).toLowerCase();
     }
 
     /**

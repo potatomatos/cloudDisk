@@ -7,7 +7,6 @@ import cn.cxnxs.pan.core.param.Node;
 import cn.cxnxs.pan.core.util.FileHelper;
 import cn.cxnxs.pan.core.util.HashesUtil;
 import cn.cxnxs.pan.core.util.HttpUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
@@ -81,7 +80,7 @@ public class BaiduPanVolume implements Volume {
 
     @Override
     public Target fromPath(String path) {
-        return this.buildTarget(path);
+        return new BaiduPanTarget(this,path);
     }
 
     @SneakyThrows
@@ -171,7 +170,7 @@ public class BaiduPanVolume implements Volume {
                     JSONObject fileInfo = list.getJSONObject(i);
                     if (Objects.equals(key,fileInfo.getString("server_filename"))) {
                         fileInfo.put("filename",fileInfo.getString("server_filename"));
-                        BaiduPanTarget parent = new BaiduPanTarget(this, parentPath,fileInfo.getLong("fs_id"));
+                        BaiduPanTarget parent = new BaiduPanTarget(this, this.buildPath(fileInfo.getLong("fs_id"),parentPath));
                         parent.setFileInfo(fileInfo);
                         baiduPanTarget.setParent(parent);
                         return parent;
@@ -187,7 +186,7 @@ public class BaiduPanVolume implements Volume {
     @Override
     public String getPath(Target target) {
         BaiduPanTarget baiduPanTarget = (BaiduPanTarget) target;
-        return JSON.toJSONString(new BaiduPanTarget.TargetInfo(baiduPanTarget.getPath(),baiduPanTarget.getFsId()));
+        return baiduPanTarget.getPath();
     }
 
     @Override
@@ -244,15 +243,16 @@ public class BaiduPanVolume implements Volume {
             BaiduPanTarget[] targets = new BaiduPanTarget[list.size()];
             for (int i = 0; i < list.size(); i++) {
                 JSONObject jsonObject = list.getJSONObject(i);
-                targets[i] = new BaiduPanTarget(baiduPanTarget,
-                        this,
-                        jsonObject.getString("path"),
-                        jsonObject.getLong("fs_id"));
+                targets[i] = new BaiduPanTarget(baiduPanTarget, this, this.buildPath(jsonObject.getLong("fs_id"), jsonObject.getString("path")));
             }
             return targets;
         }
 
         return new Target[0];
+    }
+
+    private String buildPath(Long fsId, String path) {
+        return fsId+":\\"+path;
     }
 
     @SneakyThrows
@@ -300,9 +300,7 @@ public class BaiduPanVolume implements Volume {
             JSONArray list = result.getJSONArray("list");
             for (int i = 0; i < list.size(); i++) {
                 JSONObject jsonObject = list.getJSONObject(i);
-                targets.add(new BaiduPanTarget(this,
-                        jsonObject.getString("path"),
-                        jsonObject.getLong("fs_id")));
+                targets.add(new BaiduPanTarget(this, this.buildPath(jsonObject.getLong("fs_id"),jsonObject.getString("path"))));
             }
         }
         return targets;
@@ -317,15 +315,6 @@ public class BaiduPanVolume implements Volume {
     @Override
     public String getIcon() {
         return icon;
-    }
-
-    private BaiduPanTarget buildTarget(String data) {
-        try {
-            BaiduPanTarget.TargetInfo targetInfo = JSONObject.parseObject(data, BaiduPanTarget.TargetInfo.class);
-            return new BaiduPanTarget(this,targetInfo.getPath(),targetInfo.getFsId());
-        }catch (RuntimeException e) {
-            return new BaiduPanTarget(this,data,null);
-        }
     }
 
     public static Builder builder(String alias, String rootDir, Node nodeConfig) {

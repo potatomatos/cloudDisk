@@ -1,6 +1,5 @@
 package cn.cxnxs.pan.core.core;
 
-import com.arronlong.httpclientutil.exception.HttpProcessException;
 
 import java.io.IOException;
 import java.io.InputStream;

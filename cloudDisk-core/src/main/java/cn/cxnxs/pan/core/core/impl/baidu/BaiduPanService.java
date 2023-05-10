@@ -11,6 +11,7 @@ import com.arronlong.httpclientutil.common.HttpConfig;
 import com.arronlong.httpclientutil.common.HttpHeader;
 import com.arronlong.httpclientutil.common.HttpMethods;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -69,8 +70,11 @@ public class BaiduPanService {
     public void createFile(BaiduPanTarget target, InputStream is) throws IOException, NoSuchAlgorithmException, HttpProcessException {
         //0.创建临时文件夹
         String tmpDirPath = SEPARATE_PATH + getAccessToken(tokenKey) + File.separator;
-        FileUtil.mkdir(tmpDirPath);
-        String filename = FileUtil.getName(target.getPath());
+        FileUtils.forceMkdir(new File(tmpDirPath));
+        String path = target.getPath();
+        String fixedPath = path.replaceAll("/{2,}", "/");
+
+        String filename = FileUtil.getName(path);
         // 创建文件
         // 将文件写入临时文件夹
         OutputStream os = new FileOutputStream(tmpDirPath+filename);
@@ -78,6 +82,8 @@ public class BaiduPanService {
         os.close();
         is.close();
         File uploadFile = new File(tmpDirPath + filename);
+
+        long fileSize = uploadFile.length();
         //将文件分片
         File[] separate = FileHelper.separate(uploadFile,uploadFile.getAbsolutePath()+".part", UNIT);
         // 计算每个分片的MD5
@@ -90,11 +96,11 @@ public class BaiduPanService {
         Map<String, Object> param = new HashMap<>();
         param.put("access_token", getAccessToken(tokenKey));
         param.put("method", "precreate");
-        param.put("path", target.getPath());
+        param.put("path", fixedPath);
         param.put("isdir", 0);
         param.put("autoinit", 1);
         param.put("block_list", blockList.toJSONString());
-        param.put("size", uploadFile.length());
+        param.put("size", fileSize);
         param.put("slice-md5", FileHelper.getFileMD5(uploadFile,256));
         HttpConfig preCreateConfig = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
         logger.info("------预上传");
@@ -110,7 +116,7 @@ public class BaiduPanService {
             param.put("access_token", getAccessToken(tokenKey));
             param.put("method", "upload");
             param.put("type", "tmpfile");
-            param.put("path", target.getPath());
+            param.put("path", fixedPath);
             param.put("uploadid", preCreateResult.getString("uploadid"));
             param.put("partseq", i);
             HttpConfig separateConfig = this.buildOption(HttpUtil.buildUrl(SLICING_UPLOAD_FILE_URL,param), HttpMethods.POST, HttpHeader.custom().host("d.pcs.baidu.com"));
@@ -125,12 +131,14 @@ public class BaiduPanService {
         param = new HashMap<>();
         param.put("method","create");
         param.put("access_token",getAccessToken(tokenKey));
-        param.put("path",target.getPath());
-        param.put("size",uploadFile.length());
-        param.put("isdir","0");
-        param.put("block_list",blockList);
-        param.put("uploadid",preCreateResult.getString("uploadid"));
+        HashMap<String,Object> body = new HashMap<>();
+        body.put("path",fixedPath);
+        body.put("size",fileSize+"");
+        body.put("isdir","0");
+        body.put("block_list",blockList.toJSONString());
+        body.put("uploadid",preCreateResult.getString("uploadid"));
         HttpConfig createConfig = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
+        createConfig.map(body);
         HttpUtil.request(createConfig);
         //删除临时文件
         uploadFile.deleteOnExit();
