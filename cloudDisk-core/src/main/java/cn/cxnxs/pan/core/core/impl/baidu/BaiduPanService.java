@@ -11,6 +11,7 @@ import com.arronlong.httpclientutil.common.HttpConfig;
 import com.arronlong.httpclientutil.common.HttpHeader;
 import com.arronlong.httpclientutil.common.HttpMethods;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
+import okhttp3.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -128,7 +129,7 @@ public class BaiduPanService {
         }
 
         // 3.创建文件
-        param = new HashMap<>();
+       /* param = new HashMap<>();
         param.put("method","create");
         param.put("access_token",getAccessToken(tokenKey));
         HashMap<String,Object> body = new HashMap<>();
@@ -139,7 +140,27 @@ public class BaiduPanService {
         body.put("uploadid",preCreateResult.getString("uploadid"));
         HttpConfig createConfig = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
         createConfig.map(body);
-        HttpUtil.request(createConfig);
+        HttpUtil.request(createConfig);*/
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .build();
+        param = new HashMap<>();
+        param.put("method","create");
+        param.put("access_token",getAccessToken(tokenKey));
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart("path",fixedPath)
+                .addFormDataPart("size",String.valueOf(fileSize))
+                .addFormDataPart("uploadid",preCreateResult.getString("uploadid"))
+                .addFormDataPart("block_list",blockList.toJSONString())
+                .addFormDataPart("isdir","0")
+                .build();
+        Request request = new Request.Builder()
+                .url(HttpUtil.buildUrl(FILE_MANAGER_URL,param))
+                .method("POST", body)
+                .build();
+        Response response = client.newCall(request).execute();
+        String resp = response.body().string();
+        JSONObject result = JSONObject.parseObject(resp);
+        logger.info("result:{}", result);
         //删除临时文件
         uploadFile.deleteOnExit();
     }

@@ -8,11 +8,11 @@ import com.arronlong.httpclientutil.common.*;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
+import okhttp3.OkHttpClient;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.Request;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -56,10 +56,6 @@ public class HttpUtil {
 		}
 
 		return "filename=\"" + URLEncoder.encode(fileName, "UTF8") + "\"";
-	}
-
-	public static Request buildOption(String url, HttpMethods method){
-
 	}
 
 
