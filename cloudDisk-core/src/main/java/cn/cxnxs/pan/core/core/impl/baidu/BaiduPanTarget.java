@@ -32,11 +32,15 @@ public class BaiduPanTarget implements Target {
         return volume;
     }
 
-    public String getPath() {
+    public String getFilePath() {
         int index = path.indexOf(":\\");
         if (index!=-1) {
             return path.substring(index+2);
         }
+        return path;
+    }
+
+    public String getPath() {
         return path;
     }
 

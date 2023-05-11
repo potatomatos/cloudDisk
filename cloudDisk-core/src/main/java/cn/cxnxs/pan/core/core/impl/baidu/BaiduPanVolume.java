@@ -156,7 +156,7 @@ public class BaiduPanVolume implements Volume {
         if (baiduPanTarget.getParent()!=null){
             return baiduPanTarget.getParent();
         }
-        String parentPath = HashesUtil.getParentFolderPath(baiduPanTarget.getPath());
+        String parentPath = HashesUtil.getParentFolderPath(baiduPanTarget.getFilePath());
         if (Objects.equals(rootDir,parentPath)) {
             return rootTarget;
         }
@@ -230,7 +230,7 @@ public class BaiduPanVolume implements Volume {
     @SneakyThrows
     @Override
     public boolean isRoot(Target target) {
-        return this.rootDir.equals(((BaiduPanTarget) target).getPath());
+        return this.rootDir.equals(((BaiduPanTarget) target).getFilePath());
     }
 
     @SneakyThrows

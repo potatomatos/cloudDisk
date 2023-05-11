@@ -72,7 +72,7 @@ public class BaiduPanService {
         //0.创建临时文件夹
         String tmpDirPath = SEPARATE_PATH + getAccessToken(tokenKey) + File.separator;
         FileUtils.forceMkdir(new File(tmpDirPath));
-        String path = target.getPath();
+        String path = target.getFilePath();
         String fixedPath = path.replaceAll("/{2,}", "/");
 
         String filename = FileUtil.getName(path);
@@ -184,7 +184,7 @@ public class BaiduPanService {
         Map<String,Object> param = new HashMap<>();
         param.put("method","create");
         param.put("access_token",getAccessToken(tokenKey));
-        param.put("path",target.getPath());
+        param.put("path",target.getFilePath());
         param.put("isdir",1);
         HttpConfig createConfig = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
         HttpUtil.request(createConfig);
@@ -202,7 +202,7 @@ public class BaiduPanService {
         param.put("opera","delete");
         param.put("async",1);
         JSONArray fileList = new JSONArray();
-        fileList.add(target.getPath());
+        fileList.add(target.getFilePath());
         param.put("filelist",fileList.toJSONString());
         HttpConfig config = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
         HttpUtil.request(config);
@@ -216,8 +216,8 @@ public class BaiduPanService {
         param.put("async",1);
         JSONArray fileList = new JSONArray();
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("path",origin.getPath());
-        jsonObject.put("newname",destination.getPath().substring(destination.getPath().lastIndexOf("/")));
+        jsonObject.put("path",origin.getFilePath());
+        jsonObject.put("newname",destination.getFilePath().substring(destination.getFilePath().lastIndexOf("/")));
         fileList.add(jsonObject);
         param.put("filelist",fileList.toJSONString());
         HttpConfig config = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
@@ -255,7 +255,7 @@ public class BaiduPanService {
         Map<String,Object> param = new HashMap<>();
         param.put("method","list");
         param.put("access_token",getAccessToken(tokenKey));
-        param.put("dir",target.getPath());
+        param.put("dir",target.getFilePath());
         param.put("folder",folder);
         param.put("showempty",1);
         HttpConfig config = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param));
