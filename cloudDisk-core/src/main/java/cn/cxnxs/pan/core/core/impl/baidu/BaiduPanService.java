@@ -200,11 +200,13 @@ public class BaiduPanService {
         param.put("method","filemanager");
         param.put("access_token",getAccessToken(tokenKey));
         param.put("opera","delete");
-        param.put("async",1);
+        Map<String,Object> body = new HashMap<>();
+        body.put("async",1);
         JSONArray fileList = new JSONArray();
         fileList.add(target.getFilePath());
-        param.put("filelist",fileList.toJSONString());
+        body.put("filelist",fileList.toJSONString());
         HttpConfig config = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
+        config.map(body);
         HttpUtil.request(config);
     }
 
