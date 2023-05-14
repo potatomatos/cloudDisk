@@ -25,6 +25,9 @@ import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static cn.cxnxs.pan.core.core.impl.baidu.Constant.*;
 
@@ -112,20 +115,38 @@ public class BaiduPanService {
 
         //2.分片上传
         logger.info("------分片上传，文件总大小：{}，分片数：{}", uploadFile.length(), separate.length);
+        ExecutorService executor = Executors.newCachedThreadPool();
+        CountDownLatch latch = new CountDownLatch(separate.length);
         for (int i = 0; i < separate.length; i++) {
-            param = new HashMap<>();
-            param.put("access_token", getAccessToken(tokenKey));
-            param.put("method", "upload");
-            param.put("type", "tmpfile");
-            param.put("path", fixedPath);
-            param.put("uploadid", preCreateResult.getString("uploadid"));
-            param.put("partseq", i);
-            HttpConfig separateConfig = this.buildOption(HttpUtil.buildUrl(SLICING_UPLOAD_FILE_URL,param), HttpMethods.POST, HttpHeader.custom().host("d.pcs.baidu.com"));
-            separateConfig.files(new String[]{separate[i].getPath()});
-            logger.info("------开始分片上传:{}", separate[i].getPath());
-            HttpUtil.request(separateConfig);
-            // 删除分片文件
-            separate[i].deleteOnExit();
+            int finalI = i;
+            executor.execute(() -> {
+                try {
+                    Map<String,Object> data = new HashMap<>();
+                    data.put("access_token", getAccessToken(tokenKey));
+                    data.put("method", "upload");
+                    data.put("type", "tmpfile");
+                    data.put("path", fixedPath);
+                    data.put("uploadid", preCreateResult.getString("uploadid"));
+                    data.put("partseq", finalI);
+                    HttpConfig separateConfig = this.buildOption(HttpUtil.buildUrl(SLICING_UPLOAD_FILE_URL,data), HttpMethods.POST, HttpHeader.custom().host("d.pcs.baidu.com"));
+                    separateConfig.files(new String[]{separate[finalI].getPath()});
+                    logger.info("------开始分片上传:{}", separate[finalI].getPath());
+                    HttpUtil.request(separateConfig);
+                } catch (HttpProcessException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    latch.countDown();
+                    // 删除分片文件
+                    separate[finalI].deleteOnExit();
+                }
+            });
+        }
+
+        try {
+            latch.await();
+            executor.shutdown();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         // 3.创建文件
@@ -184,9 +205,11 @@ public class BaiduPanService {
         Map<String,Object> param = new HashMap<>();
         param.put("method","create");
         param.put("access_token",getAccessToken(tokenKey));
-        param.put("path",target.getFilePath());
-        param.put("isdir",1);
+        Map<String,Object> body = new HashMap<>();
+        body.put("path",target.getFilePath());
+        body.put("isdir",1);
         HttpConfig createConfig = this.buildOption(HttpUtil.buildUrl(FILE_MANAGER_URL,param), HttpMethods.POST);
+        createConfig.map(body);
         HttpUtil.request(createConfig);
     }
 
