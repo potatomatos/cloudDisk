@@ -20,13 +20,13 @@ spring:
       enabled: true
   cloud:
     nacos:
-      server-addr: 127.0.0.1:8848
+      server-addr: 192.168.1.101:8848
       discovery:
         #命名空间
-        namespace: afafa52b-2009-43ff-8709-9945e36b4cc9
+        namespace: d768031b-b66a-4d7c-a58e-b0577dc403c9
       config:
         #命名空间
-        namespace: afafa52b-2009-43ff-8709-9945e36b4cc9
+        namespace: d768031b-b66a-4d7c-a58e-b0577dc403c9
         # 配置文件格式
         file-extension: yml
 
