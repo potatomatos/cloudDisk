@@ -21,10 +21,6 @@
         <spring.cloud>Hoxton.SR3</spring.cloud>
         <repackage.classifier/>
         <spring-native.version>0.12.1</spring-native.version>
-        <!--打包目录-->
-        <package.url>C:\install-pack\cloudDisk</package.url>
-        <!--启动类目录-->
-        <mainClass.url>cn.cxnxs.pan.web.CloudDiskWebApplication</mainClass.url>
     </properties>
     <dependencyManagement>
         <dependencies>
