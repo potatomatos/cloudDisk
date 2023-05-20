@@ -3,7 +3,7 @@ MAINTAINER mengjinyuan 782399171@qq.com
 RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo Asia/Shanghai > /etc/timezone
 WORKDIR /ROOT
 COPY target/app.jar .
-COPY target/libs .
+COPY target/lib .
 COPY target/resources .
 EXPOSE 9203
 ENTRYPOINT ["java","-jar", "app.jar"]
