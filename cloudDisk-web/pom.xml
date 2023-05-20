@@ -125,7 +125,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <!--MANIFEST.MF 中 Class-Path 加入前缀-->
-                            <classpathPrefix>./libs/</classpathPrefix>
+                            <classpathPrefix>./lib/</classpathPrefix>
                             <!--jar包不包含唯一版本标识-->
                             <useUniqueVersions>false</useUniqueVersions>
                             <!--指定入口类-->
@@ -154,7 +154,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>
-                                ${package.url}/libs
+                                ${package.url}/lib
                             </outputDirectory>
                         </configuration>
                     </execution>
