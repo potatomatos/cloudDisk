@@ -4,4 +4,4 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo Asia/Shangh
 WORKDIR /ROOT
 COPY target/APP .
 EXPOSE 9203
-ENTRYPOINT ["java","-jar", "app.jar", "&"]
+ENTRYPOINT ["java","-Xms128m","-XX:PermSize=64m","-XX:MaxPermSize=128m","-jar", "app.jar"]
