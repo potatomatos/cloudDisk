@@ -6,4 +6,4 @@ COPY target/app.jar .
 COPY target/lib .
 COPY target/resources .
 EXPOSE 9203
-ENTRYPOINT ["java","-jar", "app.jar"]
+ENTRYPOINT ["java","-jar", "app.jar", "&"]
