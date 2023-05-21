@@ -22,7 +22,7 @@
         <repackage.classifier/>
         <spring-native.version>0.12.1</spring-native.version>
         <!--打包目录-->
-        <package.url>target</package.url>
+        <package.url>target/APP</package.url>
         <!--启动类目录-->
         <mainClass.url>cn.cxnxs.pan.web.CloudDiskWebApplication</mainClass.url>
     </properties>
