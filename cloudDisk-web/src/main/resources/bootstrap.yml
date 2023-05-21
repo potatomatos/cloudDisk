@@ -1,7 +1,7 @@
 server:
   tomcat:
     uri-encoding: UTF-8
-  port: 9203
+  port: 9204
 
 spring:
   application:
